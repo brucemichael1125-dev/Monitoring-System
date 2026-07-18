@@ -1,24 +1,23 @@
 import { useState } from "react";
-import { BUDGETS, CATEGORIES, EXPENSES, MONTHS, formatRWF, getCategoryName, getCategoryColor } from "../data/mockData";
-import type { Budget } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { MONTHS, formatRWF, getCategoryName, getCategoryColor } from "../data/mockData";
 
 export default function Budgets() {
+  const { budgets, expenses, addBudget, updateBudget, deleteBudget, categories } = useAppData();
   const currentYear = new Date().getFullYear();
-  const dataYear    = BUDGETS.length > 0 ? BUDGETS[0].year : currentYear;
+  const dataYear    = budgets.length > 0 ? budgets[0].year : currentYear;
   const yearOptions = [dataYear - 1, dataYear, dataYear + 1];
-
-  const [budgets, setBudgets]     = useState<Budget[]>(BUDGETS);
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
   const [filterYear, setFilterYear]   = useState(dataYear);
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing]     = useState<Budget | null>(null);
+  const [editing, setEditing]     = useState<typeof budgets[0] | null>(null);
   const [deleteId, setDeleteId]   = useState<number | null>(null);
   const [form, setForm]           = useState({ category_id: 1, budget_amount: "", month: new Date().getMonth() + 1, year: dataYear });
 
   const filtered = budgets.filter((b) => b.month === filterMonth && b.year === filterYear);
 
   function getActual(category_id: number, month: number, year: number): number {
-    return EXPENSES
+    return expenses
       .filter((e) => {
         const d = new Date(e.expense_date);
         return e.category_id === category_id && d.getMonth() + 1 === month && d.getFullYear() === year;
@@ -41,11 +40,9 @@ export default function Budgets() {
   function handleSave() {
     if (!form.budget_amount) return;
     if (editing) {
-      setBudgets((prev) => prev.map((b) => b.budget_id === editing.budget_id
-        ? { ...b, ...form, budget_amount: Number(form.budget_amount) } : b));
+      updateBudget({ ...editing, ...form, budget_amount: Number(form.budget_amount) });
     } else {
-      const newId = Math.max(...budgets.map((b) => b.budget_id)) + 1;
-      setBudgets((prev) => [...prev, { budget_id: newId, ...form, budget_amount: Number(form.budget_amount) }]);
+      addBudget({ ...form, budget_amount: Number(form.budget_amount) });
     }
     setShowModal(false);
   }
@@ -187,7 +184,7 @@ export default function Budgets() {
         <Modal title={editing ? "Edit Budget" : "Set Budget"} onClose={() => setShowModal(false)}>
           <FormField label="Category">
             <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: Number(e.target.value) })} style={inputStyle}>
-              {CATEGORIES.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
+              {categories.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
             </select>
           </FormField>
           <FormField label="Budget Amount (RWF)">
@@ -217,7 +214,7 @@ export default function Budgets() {
           <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>Remove this budget line? This cannot be undone.</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setDeleteId(null)} style={ghostBtn}>Cancel</button>
-            <button onClick={() => { setBudgets((p) => p.filter((b) => b.budget_id !== deleteId)); setDeleteId(null); }} style={{ ...primaryBtn, padding: "9px 20px", background: "#ef4444", boxShadow: "none" }}>
+            <button onClick={() => { deleteBudget(deleteId!); setDeleteId(null); }} style={{ ...primaryBtn, padding: "9px 20px", background: "#ef4444", boxShadow: "none" }}>
               Delete
             </button>
           </div>

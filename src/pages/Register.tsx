@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAppData } from "../data/AppDataContext";
 import type { Role } from "../data/mockData";
 
 interface Props {
@@ -50,6 +51,7 @@ const ROLE_INFO: Record<Role, { label: string; description: string; color: strin
 };
 
 export default function Register({ onBack }: Props) {
+  const { addUser, users } = useAppData();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [success, setSuccess] = useState(false);
@@ -61,6 +63,7 @@ export default function Register({ onBack }: Props) {
     if (!form.full_name.trim())         e.full_name = "Full name is required.";
     if (!form.username.trim())          e.username  = "Username is required.";
     else if (form.username.includes(" ")) e.username  = "Username cannot contain spaces.";
+    else if (users.find((u) => u.username === form.username)) e.username = "Username is already taken.";
     if (!form.email.includes("@"))      e.email     = "Enter a valid email address.";
     if (!form.phone.trim())             e.phone     = "Phone number is required.";
     if (form.password.length < 6)       e.password  = "Password must be at least 6 characters.";
@@ -74,6 +77,7 @@ export default function Register({ onBack }: Props) {
     if (!validate()) return;
     setLoading(true);
     setTimeout(() => {
+      addUser({ full_name: form.full_name, username: form.username, role: form.role, email: form.email, phone: form.phone });
       setRegistered({ name: form.full_name, username: form.username, role: form.role });
       setSuccess(true);
       setLoading(false);

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { EXPENSES, REVENUES, formatRWF } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { formatRWF } from "../data/mockData";
 import type { User } from "../data/mockData";
 
-interface Props { user: User; }
+interface Props { user: User; onUpdateUser: (u: User) => void; }
 
 const ROLE_CONFIG: Record<string, { color: string; bg: string; border: string; gradient: string; desc: string }> = {
   admin:   { color: "#b45309", bg: "#fef3c7", border: "#fde68a", gradient: "linear-gradient(135deg, #92400e, #b45309)", desc: "Full system access — manage users, view all data, generate reports." },
@@ -10,7 +11,8 @@ const ROLE_CONFIG: Record<string, { color: string; bg: string; border: string; g
   staff:   { color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", gradient: "linear-gradient(135deg, #14532d, #16a34a)", desc: "Can record expenses and revenue. Cannot manage users or budgets." },
 };
 
-export default function Profile({ user }: Props) {
+export default function Profile({ user, onUpdateUser }: Props) {
+  const { updateUser, expenses, revenues } = useAppData();
   const [form, setForm]       = useState({ full_name: user.full_name, email: user.email, phone: user.phone });
   const [saved, setSaved]     = useState(false);
   const [pwForm, setPwForm]   = useState({ current: "", newPw: "", confirm: "" });
@@ -19,6 +21,9 @@ export default function Profile({ user }: Props) {
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
+    const updated: User = { ...user, full_name: form.full_name, email: form.email, phone: form.phone };
+    updateUser(updated);
+    onUpdateUser(updated);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -33,8 +38,8 @@ export default function Profile({ user }: Props) {
     setTimeout(() => { setPwMsg(""); setPwOk(false); }, 3000);
   }
 
-  const myExpenses = EXPENSES.filter((e) => e.created_by === user.full_name);
-  const myRevenues = REVENUES.filter((r) => r.created_by === user.full_name);
+  const myExpenses = expenses.filter((e) => e.created_by === user.full_name);
+  const myRevenues = revenues.filter((r) => r.created_by === user.full_name);
   const initials   = user.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
   const rc         = ROLE_CONFIG[user.role] ?? ROLE_CONFIG.staff;
 

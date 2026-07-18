@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { EXPENSES, REVENUES, CATEGORIES, formatRWF } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { formatRWF } from "../data/mockData";
 import type { User } from "../data/mockData";
 
 interface Props { user: User; onNavigate: (page: string) => void; }
 
 export default function DashboardStaff({ user, onNavigate }: Props) {
-  const myExpenses = EXPENSES.filter((e) => e.created_by === user.full_name);
-  const myRevenues = REVENUES.filter((r) => r.created_by === user.full_name);
+  const { expenses, revenues, categories, addExpense, addRevenue } = useAppData();
+  const myExpenses = expenses.filter((e) => e.created_by === user.full_name);
+  const myRevenues = revenues.filter((r) => r.created_by === user.full_name);
 
-  const latestMonth = 6;
+  const latestMonth = new Date().getMonth() + 1;
   const thisMonthExp = myExpenses.filter((e) => new Date(e.expense_date).getMonth() + 1 === latestMonth);
   const thisMonthRev = myRevenues.filter((r) => new Date(r.revenue_date).getMonth() + 1 === latestMonth);
 
@@ -21,6 +23,11 @@ export default function DashboardStaff({ user, onNavigate }: Props) {
 
   function handleQuickAdd(e: React.FormEvent) {
     e.preventDefault();
+    if (quickTab === "expense") {
+      addExpense({ category_id: quickForm.category_id, description: quickForm.description, amount: Number(quickForm.amount), expense_date: quickForm.date, created_by: user.full_name });
+    } else {
+      addRevenue({ source: quickForm.source, description: quickForm.description, amount: Number(quickForm.amount), revenue_date: quickForm.date, created_by: user.full_name });
+    }
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 2800);
     setQuickForm({ category_id: 1, source: "", amount: "", description: "", date: new Date().toISOString().slice(0, 10) });
@@ -121,7 +128,7 @@ export default function DashboardStaff({ user, onNavigate }: Props) {
             {quickTab === "expense" ? (
               <FormField label="Category">
                 <select value={quickForm.category_id} onChange={(e) => setQuickForm({ ...quickForm, category_id: Number(e.target.value) })} style={inputStyle}>
-                  {CATEGORIES.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
+                  {categories.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
                 </select>
               </FormField>
             ) : (

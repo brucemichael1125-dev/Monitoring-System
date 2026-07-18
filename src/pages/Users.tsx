@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { USERS } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
 import type { User, Role } from "../data/mockData";
 
 const ROLE_COLORS: Record<Role, { bg: string; text: string; border: string; gradient: string }> = {
@@ -9,31 +9,36 @@ const ROLE_COLORS: Record<Role, { bg: string; text: string; border: string; grad
 };
 
 export default function Users() {
-  const [users, setUsers]       = useState<User[]>(USERS);
+  const { users, addUser, updateUser, deleteUser } = useAppData();
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing]   = useState<User | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm]         = useState({ full_name: "", username: "", email: "", phone: "", role: "staff" as Role });
+  const [usernameError, setUsernameError] = useState("");
 
   function openAdd() {
     setEditing(null);
     setForm({ full_name: "", username: "", email: "", phone: "", role: "staff" });
+    setUsernameError("");
     setShowModal(true);
   }
 
   function openEdit(u: User) {
     setEditing(u);
     setForm({ full_name: u.full_name, username: u.username, email: u.email, phone: u.phone, role: u.role });
+    setUsernameError("");
     setShowModal(true);
   }
 
   function handleSave() {
     if (!form.full_name || !form.username) return;
+    const duplicate = users.find((u) => u.username === form.username && u.user_id !== editing?.user_id);
+    if (duplicate) { setUsernameError("Username is already taken."); return; }
+    setUsernameError("");
     if (editing) {
-      setUsers((prev) => prev.map((u) => u.user_id === editing.user_id ? { ...u, ...form } : u));
+      updateUser({ ...editing, ...form });
     } else {
-      const newId = Math.max(...users.map((u) => u.user_id)) + 1;
-      setUsers((prev) => [...prev, { user_id: newId, ...form, created_at: new Date().toISOString().slice(0, 10) }]);
+      addUser(form);
     }
     setShowModal(false);
   }
@@ -167,6 +172,7 @@ export default function Users() {
               </select>
             </FormField>
           </div>
+          {usernameError && <div style={{ fontSize: 11.5, color: "#ef4444" }}>{usernameError}</div>}
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
             <button onClick={() => setShowModal(false)} style={ghostBtn}>Cancel</button>
             <button onClick={handleSave} style={{ ...primaryBtn, padding: "9px 20px", boxShadow: "none" }}>Save User</button>
@@ -182,7 +188,7 @@ export default function Users() {
           </p>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={() => setDeleteId(null)} style={ghostBtn}>Cancel</button>
-            <button onClick={() => { setUsers((p) => p.filter((u) => u.user_id !== deleteId)); setDeleteId(null); }} style={{ ...primaryBtn, padding: "9px 20px", background: "#ef4444", boxShadow: "none" }}>
+            <button onClick={() => { deleteUser(deleteId!); setDeleteId(null); }} style={{ ...primaryBtn, padding: "9px 20px", background: "#ef4444", boxShadow: "none" }}>
               Remove User
             </button>
           </div>

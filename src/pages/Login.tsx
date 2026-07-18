@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { USERS } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
 import type { User } from "../data/mockData";
 
 interface Props { onLogin: (user: User) => void; }
 
 export default function Login({ onLogin }: Props) {
+  const { users } = useAppData();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw]     = useState(false);
@@ -16,7 +17,7 @@ export default function Login({ onLogin }: Props) {
     setError("");
     setLoading(true);
     setTimeout(() => {
-      const user = USERS.find((u) => u.username === username.trim().toLowerCase());
+      const user = users.find((u) => u.username === username.trim().toLowerCase());
       if (user && password === "password123") {
         onLogin(user);
       } else {

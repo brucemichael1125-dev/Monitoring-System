@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { REVENUES, formatRWF } from "../data/mockData";
-import type { Revenue } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { formatRWF } from "../data/mockData";
+import type { Revenue, User } from "../data/mockData";
 
-export default function RevenuePage() {
-  const [revenues, setRevenues] = useState<Revenue[]>(REVENUES);
+interface Props { user: User; }
+
+export default function RevenuePage({ user }: Props) {
+  const { revenues, addRevenue, updateRevenue, deleteRevenue } = useAppData();
   const [search, setSearch]     = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing]   = useState<Revenue | null>(null);
@@ -31,16 +34,15 @@ export default function RevenuePage() {
   function handleSave() {
     if (!form.source || !form.amount || !form.revenue_date) return;
     if (editing) {
-      setRevenues((prev) => prev.map((r) => r.revenue_id === editing.revenue_id ? { ...r, ...form, amount: Number(form.amount) } : r));
+      updateRevenue({ ...editing, ...form, amount: Number(form.amount) });
     } else {
-      const newId = Math.max(...revenues.map((r) => r.revenue_id)) + 1;
-      setRevenues((prev) => [...prev, { revenue_id: newId, ...form, amount: Number(form.amount), created_by: "Admin" }]);
+      addRevenue({ ...form, amount: Number(form.amount), created_by: user.full_name });
     }
     setShowModal(false);
   }
 
   function handleDelete(id: number) {
-    setRevenues((prev) => prev.filter((r) => r.revenue_id !== id));
+    deleteRevenue(id);
     setDeleteId(null);
   }
 

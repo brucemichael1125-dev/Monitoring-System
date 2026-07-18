@@ -2,10 +2,8 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell,
 } from "recharts";
-import {
-  EXPENSES, REVENUES, BUDGETS, CATEGORIES,
-  formatRWF, getMonthlyData, getCategoryExpenses,
-} from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { formatRWF, getMonthlyData, getCategoryExpenses } from "../data/mockData";
 import type { User } from "../data/mockData";
 
 interface Props { user: User; }
@@ -68,17 +66,18 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export default function Dashboard({ user }: Props) {
-  const dataYear = EXPENSES.length > 0 ? new Date(EXPENSES[0].expense_date).getFullYear() : new Date().getFullYear();
-  const totalRevenue = REVENUES.reduce((s, r) => s + r.amount, 0);
-  const totalExpenses = EXPENSES.reduce((s, e) => s + e.amount, 0);
+  const { expenses, revenues, budgets, categories } = useAppData();
+  const dataYear = expenses.length > 0 ? new Date(expenses[0].expense_date).getFullYear() : new Date().getFullYear();
+  const totalRevenue = revenues.reduce((s, r) => s + r.amount, 0);
+  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const profit = totalRevenue - totalExpenses;
-  const activeBudgets = BUDGETS.length;
+  const activeBudgets = budgets.length;
 
-  const monthly = getMonthlyData();
-  const catExpenses = getCategoryExpenses().slice(0, 5);
+  const monthly = getMonthlyData(revenues, expenses);
+  const catExpenses = getCategoryExpenses(expenses, categories).slice(0, 5);
 
-  const recentExpenses = [...EXPENSES].sort((a, b) => b.expense_date.localeCompare(a.expense_date)).slice(0, 5);
-  const recentRevenues = [...REVENUES].sort((a, b) => b.revenue_date.localeCompare(a.revenue_date)).slice(0, 5);
+  const recentExpenses = [...expenses].sort((a, b) => b.expense_date.localeCompare(a.expense_date)).slice(0, 5);
+  const recentRevenues = [...revenues].sort((a, b) => b.revenue_date.localeCompare(a.revenue_date)).slice(0, 5);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -95,10 +94,10 @@ export default function Dashboard({ user }: Props) {
 
       {/* Stat cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-        <StatCard label="TOTAL REVENUE"   value={formatRWF(totalRevenue)}  sub={`${REVENUES.length} transactions`}  accent="#2d8a4e" icon="📈" />
-        <StatCard label="TOTAL EXPENSES"  value={formatRWF(totalExpenses)} sub={`${EXPENSES.length} transactions`}  accent="#ef4444" icon="📉" />
+        <StatCard label="TOTAL REVENUE"   value={formatRWF(totalRevenue)}  sub={`${revenues.length} transactions`}  accent="#2d8a4e" icon="📈" />
+        <StatCard label="TOTAL EXPENSES"  value={formatRWF(totalExpenses)} sub={`${expenses.length} transactions`}  accent="#ef4444" icon="📉" />
         <StatCard label="NET PROFIT"      value={formatRWF(profit)}        sub={profit > 0 ? "Profitable period" : "Loss period"}  accent={profit > 0 ? "#f59e0b" : "#ef4444"} icon="💰" />
-        <StatCard label="ACTIVE BUDGETS"  value={String(activeBudgets)}   sub={`${CATEGORIES.length} categories`}  accent="#3b82f6" icon="📊" />
+        <StatCard label="ACTIVE BUDGETS"  value={String(activeBudgets)}   sub={`${categories.length} categories`}  accent="#3b82f6" icon="📊" />
       </div>
 
       {/* Charts row */}

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { USERS, EXPENSES, REVENUES, CATEGORIES, BUDGETS, formatRWF } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { formatRWF } from "../data/mockData";
 import type { User, Role } from "../data/mockData";
 
 interface Props { user: User; onNavigate: (page: string) => void; }
@@ -10,28 +11,29 @@ const ROLE_META: Record<Role, { color: string; bg: string; dot: string }> = {
   staff:   { color: "#15803d", bg: "#f0fdf4", dot: "#22c55e" },
 };
 
-const activityFeed = [
-  ...EXPENSES.map((e) => ({ type: "expense" as const, date: e.expense_date, label: e.description, amount: e.amount, by: e.created_by })),
-  ...REVENUES.map((r) => ({ type: "revenue" as const, date: r.revenue_date, label: r.source, amount: r.amount, by: r.created_by })),
-].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12);
-
 export default function DashboardAdmin({ user, onNavigate }: Props) {
+  const { users, expenses, revenues, budgets, categories } = useAppData();
   const [activeTab, setActiveTab] = useState<"overview" | "users" | "activity">("overview");
 
-  const totalRevenue  = REVENUES.reduce((s, r) => s + r.amount, 0);
-  const totalExpenses = EXPENSES.reduce((s, e) => s + e.amount, 0);
+  const activityFeed = [
+    ...expenses.map((e) => ({ type: "expense" as const, date: e.expense_date, label: e.description, amount: e.amount, by: e.created_by })),
+    ...revenues.map((r) => ({ type: "revenue" as const, date: r.revenue_date, label: r.source, amount: r.amount, by: r.created_by })),
+  ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12);
+
+  const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
+  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const netProfit     = totalRevenue - totalExpenses;
-  const adminCount    = USERS.filter((u) => u.role === "admin").length;
-  const managerCount  = USERS.filter((u) => u.role === "manager").length;
-  const staffCount    = USERS.filter((u) => u.role === "staff").length;
+  const adminCount    = users.filter((u) => u.role === "admin").length;
+  const managerCount  = users.filter((u) => u.role === "manager").length;
+  const staffCount    = users.filter((u) => u.role === "staff").length;
 
   const kpiStrip = [
-    { label: "Total Users",  value: USERS.length,      color: "#0e3a1d", bg: "#f0faf3", border: "#b3e6c4", icon: "👥" },
-    { label: "Admins",       value: adminCount,         color: "#b45309", bg: "#fef3c7", border: "#fde68a", icon: "🔑" },
-    { label: "Managers",     value: managerCount,       color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe", icon: "📊" },
-    { label: "Staff",        value: staffCount,         color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", icon: "👤" },
-    { label: "Categories",   value: CATEGORIES.length,  color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe", icon: "🏷️" },
-    { label: "Budget Lines", value: BUDGETS.length,     color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd", icon: "📋" },
+    { label: "Total Users",  value: users.length,       color: "#0e3a1d", bg: "#f0faf3", border: "#b3e6c4", icon: "👥" },
+    { label: "Admins",       value: adminCount,          color: "#b45309", bg: "#fef3c7", border: "#fde68a", icon: "🔑" },
+    { label: "Managers",     value: managerCount,        color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe", icon: "📊" },
+    { label: "Staff",        value: staffCount,          color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", icon: "👤" },
+    { label: "Categories",   value: categories.length,   color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe", icon: "🏷️" },
+    { label: "Budget Lines", value: budgets.length,      color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd", icon: "📋" },
   ];
 
   const tabs = [
@@ -81,8 +83,8 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
 
       {/* Financial overview */}
       <div style={{ display: "grid", gap: 14 }} className="rg-3">
-        <FinCard label="Total Revenue"  value={formatRWF(totalRevenue)}  sub={`${REVENUES.length} transactions`}  color="#2d8a4e" bg="#f0faf3" border="#b3e6c4" icon={<TrendUpIcon />} />
-        <FinCard label="Total Expenses" value={formatRWF(totalExpenses)} sub={`${EXPENSES.length} cost records`}  color="#ef4444" bg="#fef2f2" border="#fecaca" icon={<TrendDownIcon />} />
+        <FinCard label="Total Revenue"  value={formatRWF(totalRevenue)}  sub={`${revenues.length} transactions`}  color="#2d8a4e" bg="#f0faf3" border="#b3e6c4" icon={<TrendUpIcon />} />
+        <FinCard label="Total Expenses" value={formatRWF(totalExpenses)} sub={`${expenses.length} cost records`}  color="#ef4444" bg="#fef2f2" border="#fecaca" icon={<TrendDownIcon />} />
         <FinCard label="Net Profit"     value={formatRWF(netProfit)}     sub={netProfit > 0 ? "Business profitable" : "Operating at loss"} color={netProfit > 0 ? "#d97706" : "#ef4444"} bg={netProfit > 0 ? "#fffbeb" : "#fef2f2"} border={netProfit > 0 ? "#fde68a" : "#fecaca"} icon={<CoinIcon />} />
       </div>
 
@@ -115,12 +117,12 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
               <div style={{ padding: "15px 20px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Expense Categories</span>
-                <span style={{ fontSize: 11, color: "#94a3b8", fontFamily: "var(--font-mono)" }}>{CATEGORIES.length} active</span>
+                <span style={{ fontSize: 11, color: "#94a3b8", fontFamily: "var(--font-mono)" }}>{categories.length} active</span>
               </div>
               <div style={{ padding: "4px 0" }}>
-                {CATEGORIES.map((cat) => {
-                  const spend = EXPENSES.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0);
-                  const count = EXPENSES.filter((e) => e.category_id === cat.category_id).length;
+                {categories.map((cat) => {
+                  const spend = expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0);
+                  const count = expenses.filter((e) => e.category_id === cat.category_id).length;
                   const pct   = totalExpenses > 0 ? (spend / totalExpenses) * 100 : 0;
                   return (
                     <div
@@ -150,10 +152,10 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
               <div style={{ background: "linear-gradient(135deg, #09261A 0%, #0e3a1d 100%)", borderRadius: 12, padding: 22, color: "#fff" }}>
                 <div style={{ fontSize: 11, color: "#4ead6b", fontWeight: 700, letterSpacing: "0.08em", marginBottom: 16 }}>SYSTEM HEALTH</div>
                 {[
-                  { label: "Expenses recorded", value: EXPENSES.length, max: 50 },
-                  { label: "Revenues recorded",  value: REVENUES.length, max: 50 },
-                  { label: "Budgets set",         value: BUDGETS.length,  max: 40 },
-                  { label: "Active users",        value: USERS.length,    max: 20 },
+                  { label: "Expenses recorded", value: expenses.length, max: 50 },
+                  { label: "Revenues recorded",  value: revenues.length, max: 50 },
+                  { label: "Budgets set",         value: budgets.length,  max: 40 },
+                  { label: "Active users",        value: users.length,    max: 20 },
                 ].map((stat) => (
                   <div key={stat.label} style={{ marginBottom: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
@@ -215,7 +217,7 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {USERS.map((u, i) => {
+                  {users.map((u, i) => {
                     const m = ROLE_META[u.role];
                     const ini = u.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
                     return (

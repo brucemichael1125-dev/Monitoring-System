@@ -76,12 +76,12 @@ export default function App() {
 
     switch (page) {
       case "dashboard": return renderDashboard();
-      case "expenses":  return <Expenses />;
-      case "revenue":   return <RevenuePage />;
+      case "expenses":  return <Expenses user={user!} />;
+      case "revenue":   return <RevenuePage user={user!} />;
       case "budgets":   return <Budgets />;
       case "reports":   return <Reports />;
       case "users":     return <Users />;
-      case "profile":   return <Profile user={user!} />;
+      case "profile":   return <Profile user={user!} onUpdateUser={(u) => setUser(u)} />;
       default:          return renderDashboard();
     }
   }

@@ -2,7 +2,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, LineChart, Line, Cell,
 } from "recharts";
-import { EXPENSES, REVENUES, BUDGETS, CATEGORIES, MONTHS, formatRWF } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { MONTHS, formatRWF } from "../data/mockData";
 
 function ChartTip({ active, payload, label }: { active?: boolean; payload?: { color: string; name: string; value: number }[]; label?: string }) {
   if (!active || !payload?.length) return null;
@@ -20,37 +21,38 @@ function ChartTip({ active, payload, label }: { active?: boolean; payload?: { co
 }
 
 export default function Reports() {
-  const dataYear      = EXPENSES.length > 0 ? new Date(EXPENSES[0].expense_date).getFullYear() : new Date().getFullYear();
-  const totalRevenue  = REVENUES.reduce((s, r) => s + r.amount, 0);
-  const totalExpenses = EXPENSES.reduce((s, e) => s + e.amount, 0);
+  const { expenses, revenues, budgets, categories } = useAppData();
+  const dataYear      = expenses.length > 0 ? new Date(expenses[0].expense_date).getFullYear() : new Date().getFullYear();
+  const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
+  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const profit        = totalRevenue - totalExpenses;
   const margin        = totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : "0";
 
   const monthlySummary = [1, 2, 3, 4, 5, 6].map((m) => {
-    const revenue  = REVENUES.filter((r) => new Date(r.revenue_date).getMonth() + 1 === m).reduce((s, r) => s + r.amount, 0);
-    const expenses = EXPENSES.filter((e) => new Date(e.expense_date).getMonth() + 1 === m).reduce((s, e) => s + e.amount, 0);
-    const budget   = BUDGETS.filter((b) => b.month === m && b.year === dataYear).reduce((s, b) => s + b.budget_amount, 0);
-    return { month: MONTHS[m - 1], revenue, expenses, profit: revenue - expenses, budget };
+    const revenue  = revenues.filter((r) => new Date(r.revenue_date).getMonth() + 1 === m).reduce((s, r) => s + r.amount, 0);
+    const expTotal = expenses.filter((e) => new Date(e.expense_date).getMonth() + 1 === m).reduce((s, e) => s + e.amount, 0);
+    const budget   = budgets.filter((b) => b.month === m && b.year === dataYear).reduce((s, b) => s + b.budget_amount, 0);
+    return { month: MONTHS[m - 1], revenue, expenses: expTotal, profit: revenue - expTotal, budget };
   });
 
-  const catBreakdown = CATEGORIES.map((cat) => ({
+  const catBreakdown = categories.map((cat) => ({
     name:     cat.category_name.split(" ").slice(0, 2).join(" "),
-    budgeted: BUDGETS.filter((b) => b.category_id === cat.category_id).reduce((s, b) => s + b.budget_amount, 0),
-    actual:   EXPENSES.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0),
+    budgeted: budgets.filter((b) => b.category_id === cat.category_id).reduce((s, b) => s + b.budget_amount, 0),
+    actual:   expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0),
     color:    cat.color,
   })).filter((c) => c.actual > 0 || c.budgeted > 0);
 
-  const expByCat = CATEGORIES.map((cat) => ({
+  const expByCat = categories.map((cat) => ({
     id:    cat.category_id,
     name:  cat.category_name,
     color: cat.color,
-    total: EXPENSES.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0),
-    count: EXPENSES.filter((e) => e.category_id === cat.category_id).length,
+    total: expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0),
+    count: expenses.filter((e) => e.category_id === cat.category_id).length,
   })).filter((c) => c.total > 0).sort((a, b) => b.total - a.total);
 
   const kpis = [
-    { label: "Total Revenue",  value: formatRWF(totalRevenue),  sub: `${REVENUES.length} transactions`,  bg: "#f0faf3", color: "#2d8a4e", border: "#b3e6c4" },
-    { label: "Total Expenses", value: formatRWF(totalExpenses), sub: `${EXPENSES.length} transactions`,  bg: "#fef2f2", color: "#ef4444", border: "#fecaca" },
+    { label: "Total Revenue",  value: formatRWF(totalRevenue),  sub: `${revenues.length} transactions`,  bg: "#f0faf3", color: "#2d8a4e", border: "#b3e6c4" },
+    { label: "Total Expenses", value: formatRWF(totalExpenses), sub: `${expenses.length} transactions`,  bg: "#fef2f2", color: "#ef4444", border: "#fecaca" },
     { label: "Net Profit",     value: formatRWF(profit),        sub: profit > 0 ? "Profitable" : "Loss", bg: profit > 0 ? "#fffbeb" : "#fef2f2", color: profit > 0 ? "#d97706" : "#ef4444", border: profit > 0 ? "#fde68a" : "#fecaca" },
     { label: "Profit Margin",  value: `${margin}%`,             sub: "Based on total revenue",            bg: "#eff6ff", color: "#3b82f6", border: "#bfdbfe" },
   ];

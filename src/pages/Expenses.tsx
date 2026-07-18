@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { EXPENSES, CATEGORIES, formatRWF, getCategoryName, getCategoryColor } from "../data/mockData";
-import type { Expense } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { formatRWF, getCategoryName, getCategoryColor } from "../data/mockData";
+import type { Expense, User } from "../data/mockData";
 
 type SortKey = "expense_date" | "amount" | "category_id";
 
-export default function Expenses() {
-  const [expenses, setExpenses]   = useState<Expense[]>(EXPENSES);
+interface Props { user: User; }
+
+export default function Expenses({ user }: Props) {
+  const { expenses, addExpense, updateExpense, deleteExpense, categories } = useAppData();
   const [search, setSearch]       = useState("");
   const [filterCat, setFilterCat] = useState(0);
   const [sortKey, setSortKey]     = useState<SortKey>("expense_date");
@@ -42,17 +45,15 @@ export default function Expenses() {
   function handleSave() {
     if (!form.description || !form.amount || !form.expense_date) return;
     if (editing) {
-      setExpenses((prev) => prev.map((e) => e.expense_id === editing.expense_id
-        ? { ...e, ...form, amount: Number(form.amount) } : e));
+      updateExpense({ ...editing, ...form, amount: Number(form.amount) });
     } else {
-      const newId = Math.max(...expenses.map((e) => e.expense_id)) + 1;
-      setExpenses((prev) => [...prev, { expense_id: newId, ...form, amount: Number(form.amount), created_by: "Admin" }]);
+      addExpense({ ...form, amount: Number(form.amount), created_by: user.full_name });
     }
     setShowModal(false);
   }
 
   function handleDelete(id: number) {
-    setExpenses((prev) => prev.filter((e) => e.expense_id !== id));
+    deleteExpense(id);
     setDeleteId(null);
   }
 
@@ -94,7 +95,7 @@ export default function Expenses() {
         </div>
         <select value={filterCat} onChange={(e) => setFilterCat(Number(e.target.value))} style={{ ...inputStyle, maxWidth: 210 }}>
           <option value={0}>All Categories</option>
-          {CATEGORIES.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
+          {categories.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
         </select>
         <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} style={{ ...inputStyle, maxWidth: 160 }}>
           <option value="expense_date">Sort: Date ↓</option>
@@ -191,7 +192,7 @@ export default function Expenses() {
         <Modal title={editing ? "Edit Expense" : "Add Expense"} onClose={() => setShowModal(false)}>
           <FormField label="Category">
             <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: Number(e.target.value) })} style={inputStyle}>
-              {CATEGORIES.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
+              {categories.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
             </select>
           </FormField>
           <FormField label="Description">

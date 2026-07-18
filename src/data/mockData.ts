@@ -183,20 +183,26 @@ export const BUDGETS: Budget[] = [
 // ── Monthly summary helper ────────────────────────────────────────────────────
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export function getMonthlyData() {
+export function getMonthlyData(
+  revenues: Revenue[] = REVENUES,
+  expenses: Expense[] = EXPENSES,
+) {
   const months = [1, 2, 3, 4, 5, 6];
   return months.map((m) => {
-    const revenue = REVENUES.filter((r) => new Date(r.revenue_date).getMonth() + 1 === m).reduce((s, r) => s + r.amount, 0);
-    const expenses = EXPENSES.filter((e) => new Date(e.expense_date).getMonth() + 1 === m).reduce((s, e) => s + e.amount, 0);
-    return { month: MONTHS[m - 1], revenue, expenses, profit: revenue - expenses };
+    const revenue  = revenues.filter((r) => new Date(r.revenue_date).getMonth() + 1 === m).reduce((s, r) => s + r.amount, 0);
+    const expenses_ = expenses.filter((e) => new Date(e.expense_date).getMonth() + 1 === m).reduce((s, e) => s + e.amount, 0);
+    return { month: MONTHS[m - 1], revenue, expenses: expenses_, profit: revenue - expenses_ };
   });
 }
 
-export function getCategoryExpenses() {
-  return CATEGORIES.map((cat) => ({
+export function getCategoryExpenses(
+  expenses: Expense[] = EXPENSES,
+  categories: Category[] = CATEGORIES,
+) {
+  return categories.map((cat) => ({
     name: cat.category_name.split(" ")[0] + (cat.category_name.split(" ")[1] ? " " + cat.category_name.split(" ")[1] : ""),
     fullName: cat.category_name,
-    amount: EXPENSES.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0),
+    amount: expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0),
     color: cat.color,
   })).filter((c) => c.amount > 0);
 }

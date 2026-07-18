@@ -2,7 +2,8 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, Cell,
 } from "recharts";
-import { EXPENSES, REVENUES, BUDGETS, CATEGORIES, formatRWF, getMonthlyData } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
+import { formatRWF, getMonthlyData } from "../data/mockData";
 import type { User } from "../data/mockData";
 
 interface Props { user: User; onNavigate: (page: string) => void; }
@@ -23,25 +24,26 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 export default function DashboardManager({ user, onNavigate }: Props) {
-  const dataYear      = EXPENSES.length > 0 ? new Date(EXPENSES[0].expense_date).getFullYear() : new Date().getFullYear();
-  const totalRevenue  = REVENUES.reduce((s, r) => s + r.amount, 0);
-  const totalExpenses = EXPENSES.reduce((s, e) => s + e.amount, 0);
+  const { expenses, revenues, budgets, categories } = useAppData();
+  const dataYear      = expenses.length > 0 ? new Date(expenses[0].expense_date).getFullYear() : new Date().getFullYear();
+  const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
+  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const profit  = totalRevenue - totalExpenses;
   const margin  = totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : "0";
 
-  const monthly = getMonthlyData();
+  const monthly = getMonthlyData(revenues, expenses);
 
-  const budgetComparison = CATEGORIES.map((cat) => {
-    const budgeted = BUDGETS.filter((b) => b.category_id === cat.category_id).reduce((s, b) => s + b.budget_amount, 0);
-    const actual   = EXPENSES.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0);
+  const budgetComparison = categories.map((cat) => {
+    const budgeted = budgets.filter((b) => b.category_id === cat.category_id).reduce((s, b) => s + b.budget_amount, 0);
+    const actual   = expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0);
     return { name: cat.category_name.split(" ")[0], budgeted, actual, over: actual > budgeted && budgeted > 0 };
   }).filter((c) => c.budgeted > 0 || c.actual > 0);
 
   const overBudget = budgetComparison.filter((c) => c.over);
 
   const kpiCards = [
-    { label: "Total Revenue",  value: formatRWF(totalRevenue),  sub: `${REVENUES.length} transactions`, accent: "#2d8a4e", bg: "#f0faf3", border: "#b3e6c4" },
-    { label: "Total Expenses", value: formatRWF(totalExpenses), sub: `${EXPENSES.length} cost records`,  accent: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
+    { label: "Total Revenue",  value: formatRWF(totalRevenue),  sub: `${revenues.length} transactions`, accent: "#2d8a4e", bg: "#f0faf3", border: "#b3e6c4" },
+    { label: "Total Expenses", value: formatRWF(totalExpenses), sub: `${expenses.length} cost records`,  accent: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
     { label: "Net Profit",     value: formatRWF(profit),        sub: profit > 0 ? "Profitable" : "Operating loss", accent: profit > 0 ? "#d97706" : "#ef4444", bg: profit > 0 ? "#fffbeb" : "#fef2f2", border: profit > 0 ? "#fde68a" : "#fecaca" },
     { label: "Profit Margin",  value: `${margin}%`,             sub: "Based on total revenue",            accent: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
   ];
@@ -222,13 +224,13 @@ export default function DashboardManager({ user, onNavigate }: Props) {
         <RecentTable
           title="Recent Expenses"
           accent="#ef4444"
-          items={[...EXPENSES].sort((a, b) => b.expense_date.localeCompare(a.expense_date)).slice(0, 6).map((e) => ({ label: e.description, sub: e.expense_date, amount: e.amount, type: "expense" as const }))}
+          items={[...expenses].sort((a, b) => b.expense_date.localeCompare(a.expense_date)).slice(0, 6).map((e) => ({ label: e.description, sub: e.expense_date, amount: e.amount, type: "expense" as const }))}
           onViewAll={() => onNavigate("expenses")}
         />
         <RecentTable
           title="Recent Revenue"
           accent="#2d8a4e"
-          items={[...REVENUES].sort((a, b) => b.revenue_date.localeCompare(a.revenue_date)).slice(0, 6).map((r) => ({ label: r.source, sub: r.revenue_date, amount: r.amount, type: "revenue" as const }))}
+          items={[...revenues].sort((a, b) => b.revenue_date.localeCompare(a.revenue_date)).slice(0, 6).map((r) => ({ label: r.source, sub: r.revenue_date, amount: r.amount, type: "revenue" as const }))}
           onViewAll={() => onNavigate("revenue")}
         />
       </div>
