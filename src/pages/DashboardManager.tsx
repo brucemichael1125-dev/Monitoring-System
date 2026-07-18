@@ -118,7 +118,7 @@ export default function DashboardManager({ user, onNavigate }: Props) {
         <div style={{ background: "#fff", borderRadius: 12, padding: "22px 22px 16px", border: "1px solid #e2e8f0" }}>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Monthly Revenue vs Expenses</div>
-            <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>Jan – Jun 2025 · GreenHarvest Agribusiness Ltd</div>
+            <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>Jan – Jun 2025 · Agri-Business Operational Cost &amp; Budget Monitoring System</div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={monthly} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>

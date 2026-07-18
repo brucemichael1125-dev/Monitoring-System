@@ -153,8 +153,8 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
           }}>🌿</div>
           {(sidebarOpen || isMobile) && (
             <div style={{ overflow: "hidden" }}>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: 13.5, whiteSpace: "nowrap", letterSpacing: "-0.01em", lineHeight: 1.2 }}>GreenHarvest</div>
-              <div style={{ color: "#4ead6b", fontSize: 9, fontFamily: "var(--font-mono)", letterSpacing: "0.14em", whiteSpace: "nowrap", marginTop: 2, opacity: 0.85 }}>AGRIBUSINESS LTD</div>
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 11, whiteSpace: "nowrap", letterSpacing: "0.01em", lineHeight: 1.3 }}>AGRI-BUSINESS</div>
+              <div style={{ color: "#4ead6b", fontSize: 8, fontFamily: "var(--font-mono)", letterSpacing: "0.08em", whiteSpace: "nowrap", marginTop: 2, opacity: 0.85 }}>MONITORING SYSTEM</div>
             </div>
           )}
         </div>
@@ -330,7 +330,7 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
 
             {/* Breadcrumb */}
             <nav className="tb-hide-sm" style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
-              <span style={{ fontSize: 12, color: "#94a3b8", whiteSpace: "nowrap" }}>GreenHarvest</span>
+              <span style={{ fontSize: 12, color: "#94a3b8", whiteSpace: "nowrap" }}>Monitoring System</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
               <span style={{ fontSize: 12.5, fontWeight: 650, color: "#334155", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentLabel}</span>
             </nav>

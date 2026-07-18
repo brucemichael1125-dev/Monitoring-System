@@ -145,8 +145,8 @@ export default function Register({ onBack }: Props) {
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: "#2d8a4e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🌿</div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 18 }}>GreenHarvest</div>
-            <div style={{ fontSize: 10, color: "#4ead6b", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>AGRIBUSINESS LTD</div>
+            <div style={{ fontWeight: 800, fontSize: 12, letterSpacing: "0.01em", lineHeight: 1.4 }}>AGRI-BUSINESS OPERATIONAL COST</div>
+            <div style={{ fontWeight: 800, fontSize: 12, letterSpacing: "0.01em", lineHeight: 1.4 }}>AND BUDGET MONITORING SYSTEM</div>
           </div>
         </div>
 
@@ -177,7 +177,7 @@ export default function Register({ onBack }: Props) {
         </div>
 
         <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 40 }}>
-          Admin access required · GreenHarvest ACMS · Rwanda 2025
+          Admin access required · Agri-Business Monitoring System · Rwanda 2025
         </p>
       </div>
 

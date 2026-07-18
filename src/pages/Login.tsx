@@ -82,8 +82,9 @@ export default function Login({ onLogin }: Props) {
             fontSize: 26, boxShadow: "0 4px 16px rgba(45,138,78,0.4)",
           }}>🌿</div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: "-0.01em" }}>GreenHarvest</div>
-            <div style={{ fontSize: 10.5, color: "#4ead6b", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", marginTop: 2 }}>AGRIBUSINESS LTD · RWANDA</div>
+            <div style={{ fontWeight: 800, fontSize: 13, letterSpacing: "0.01em", lineHeight: 1.3 }}>AGRI-BUSINESS OPERATIONAL COST</div>
+            <div style={{ fontWeight: 800, fontSize: 13, letterSpacing: "0.01em", lineHeight: 1.3 }}>AND BUDGET MONITORING SYSTEM</div>
+            <div style={{ fontSize: 10, color: "#4ead6b", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", marginTop: 3 }}>RWANDA · 2025</div>
           </div>
         </div>
 

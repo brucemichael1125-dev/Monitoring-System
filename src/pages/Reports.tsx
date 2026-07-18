@@ -61,7 +61,7 @@ export default function Reports() {
       <div className="page-hdr">
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0e3a1d", margin: 0, letterSpacing: "-0.02em" }}>Reports</h1>
-          <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Financial summary · GreenHarvest Agribusiness Ltd · Jan–Jun 2025</p>
+          <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Financial summary · Agri-Business Operational Cost &amp; Budget Monitoring System · Jan–Jun 2025</p>
         </div>
         <button
           onClick={() => window.print()}
