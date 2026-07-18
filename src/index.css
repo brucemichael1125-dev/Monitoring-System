@@ -57,13 +57,59 @@ html, body, #root {
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc;
+  background-color: #f1f5f9;
   color: #1e293b;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Hide scrollbar by default, show on hover/scroll */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid #2d8a4e;
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: #b3e6c4;
+  color: #0e3a1d;
+}
+
+/* Page fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: fadeIn 0.22s ease both;
+}
+
+/* Card hover lift */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Input focus enhancement */
+input:focus, select:focus, textarea:focus {
+  border-color: #2d8a4e !important;
+  box-shadow: 0 0 0 3px rgba(45, 138, 78, 0.1);
+}
+
+/* Print styles */
+@media print {
+  body { background: #fff; }
+  aside, header { display: none !important; }
+  main { padding: 0 !important; overflow: visible !important; }
+}

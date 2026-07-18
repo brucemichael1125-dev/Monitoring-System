@@ -9,34 +9,45 @@ interface Props {
 export default function Login({ onLogin }: Props) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
 
-  // Demo: any user from the mock list can log in with password "password123"
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     setTimeout(() => {
       const user = USERS.find((u) => u.username === username.trim().toLowerCase());
       if (user && password === "password123") {
         onLogin(user);
       } else {
-        setError("Invalid username or password. Try: admin / password123");
+        setError("Invalid username or password.");
       }
       setLoading(false);
     }, 600);
   }
 
+  const demos = [
+    { username: "admin",    role: "Admin",   name: "Jean-Pierre", color: "#b45309", bg: "#fef3c7" },
+    { username: "claudine", role: "Manager", name: "Claudine",    color: "#1d4ed8", bg: "#eff6ff" },
+    { username: "theo",     role: "Staff",   name: "Théodore",    color: "#15803d", bg: "#f0fdf4" },
+  ];
+
+  const features = [
+    "Track operational expenses by category",
+    "Monitor revenue from multiple streams",
+    "Budget vs actual variance analysis",
+    "Role-based access control",
+    "Automated financial reports",
+  ];
+
   return (
     <div style={{
       minHeight: "100vh",
       display: "flex",
-      background: "linear-gradient(135deg, #071d0e 0%, #0e3a1d 50%, #155229 100%)",
       fontFamily: "var(--font-sans)",
+      background: "#071d0e",
     }}>
-
       {/* Left panel — branding */}
       <div style={{
         flex: 1,
@@ -45,22 +56,39 @@ export default function Login({ onLogin }: Props) {
         justifyContent: "center",
         padding: "60px 64px",
         color: "#fff",
+        position: "relative",
+        overflow: "hidden",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 48 }}>
+        {/* Decorative background circles */}
+        <div style={{
+          position: "absolute", top: -120, right: -120,
+          width: 420, height: 420, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(45,138,78,0.15) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div style={{
+          position: "absolute", bottom: -80, left: -80,
+          width: 300, height: 300, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(78,173,107,0.1) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 52 }}>
           <div style={{
-            width: 48, height: 48, borderRadius: 12,
-            background: "#2d8a4e",
+            width: 52, height: 52, borderRadius: 14,
+            background: "linear-gradient(135deg, #2d8a4e 0%, #4ead6b 100%)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 24,
+            fontSize: 26, boxShadow: "0 4px 16px rgba(45,138,78,0.4)",
           }}>🌿</div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: "-0.01em" }}>GreenHarvest</div>
-            <div style={{ fontSize: 11, color: "#4ead6b", fontFamily: "var(--font-mono)", letterSpacing: "0.08em" }}>AGRIBUSINESS LTD</div>
+            <div style={{ fontSize: 10.5, color: "#4ead6b", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", marginTop: 2 }}>AGRIBUSINESS LTD · RWANDA</div>
           </div>
         </div>
 
         <h1 style={{
-          fontSize: 42, fontWeight: 800, lineHeight: 1.1,
+          fontSize: 40, fontWeight: 800, lineHeight: 1.12,
           letterSpacing: "-0.03em", margin: "0 0 20px",
         }}>
           Cost & Revenue<br />
@@ -68,103 +96,92 @@ export default function Login({ onLogin }: Props) {
           System
         </h1>
 
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", lineHeight: 1.7, maxWidth: 360 }}>
-          Track operational expenses, monitor revenue streams, manage budgets, and generate actionable reports — all in one place.
+        <p style={{ fontSize: 14.5, color: "rgba(255,255,255,0.58)", lineHeight: 1.7, maxWidth: 380, margin: "0 0 36px" }}>
+          Track operational expenses, monitor revenue streams, manage budgets and generate actionable reports — all in one place.
         </p>
 
-        <div style={{ marginTop: 48, display: "flex", gap: 32 }}>
-          {[
-            { label: "Expenses Tracked", value: "20+" },
-            { label: "Revenue Sources", value: "15+" },
-            { label: "Categories", value: "8" },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <div style={{ fontSize: 26, fontWeight: 800, color: "#4ead6b", fontFamily: "var(--font-mono)" }}>{stat.value}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{stat.label}</div>
+        {/* Feature list */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 44 }}>
+          {features.map((f) => (
+            <div key={f} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: "50%",
+                background: "rgba(78,173,107,0.2)",
+                border: "1px solid rgba(78,173,107,0.4)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ead6b" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{f}</span>
             </div>
           ))}
         </div>
 
-        {/* Rwanda flag strip */}
-        <div style={{ marginTop: 60, display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 20 }}>🇷🇼</span>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Selected Agribusiness Enterprise, Rwanda</span>
+        {/* Stats */}
+        <div style={{ display: "flex", gap: 28 }}>
+          {[
+            { value: "20+", label: "Expenses Tracked" },
+            { value: "15+", label: "Revenue Records" },
+            { value: "8",   label: "Categories" },
+          ].map((s) => (
+            <div key={s.label}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: "#4ead6b", fontFamily: "var(--font-mono)", lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 52, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 18 }}>🇷🇼</span>
+          <span style={{ fontSize: 11.5, color: "rgba(255,255,255,0.3)" }}>BIT Final-Year Project · University of Rwanda · 2025</span>
         </div>
       </div>
 
       {/* Right panel — login form */}
       <div style={{
-        width: 440,
+        width: 448,
         flexShrink: 0,
         background: "#fff",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        padding: "60px 48px",
+        padding: "56px 48px",
+        boxShadow: "-12px 0 60px rgba(0,0,0,0.25)",
       }}>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: "#1e293b", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
-          Sign in
-        </h2>
-        <p style={{ fontSize: 14, color: "#94a3b8", margin: "0 0 36px" }}>
-          Enter your credentials to access the system
-        </p>
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: "#0e3a1d", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+            Welcome back
+          </h2>
+          <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>
+            Sign in to access your dashboard
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#475569", letterSpacing: "0.05em", display: "block", marginBottom: 6 }}>
-              USERNAME
-            </label>
+          <InputField label="Username" placeholder="e.g. admin">
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. admin"
               required
-              style={{
-                width: "100%",
-                padding: "11px 14px",
-                border: "1.5px solid #e2e8f0",
-                borderRadius: 8,
-                fontSize: 14,
-                fontFamily: "var(--font-sans)",
-                color: "#1e293b",
-                background: "#f8fafc",
-                outline: "none",
-                transition: "border-color 0.15s",
-                boxSizing: "border-box",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "#2d8a4e")}
-              onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+              style={inputCss}
             />
-          </div>
+          </InputField>
 
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#475569", letterSpacing: "0.05em", display: "block", marginBottom: 6 }}>
-              PASSWORD
-            </label>
+          <InputField label="Password" placeholder="">
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••"
               required
-              style={{
-                width: "100%",
-                padding: "11px 14px",
-                border: "1.5px solid #e2e8f0",
-                borderRadius: 8,
-                fontSize: 14,
-                fontFamily: "var(--font-sans)",
-                color: "#1e293b",
-                background: "#f8fafc",
-                outline: "none",
-                transition: "border-color 0.15s",
-                boxSizing: "border-box",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "#2d8a4e")}
-              onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+              style={inputCss}
             />
-          </div>
+          </InputField>
 
           {error && (
             <div style={{
@@ -174,7 +191,9 @@ export default function Login({ onLogin }: Props) {
               borderRadius: 8,
               fontSize: 13,
               color: "#b91c1c",
+              display: "flex", alignItems: "center", gap: 8,
             }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               {error}
             </div>
           )}
@@ -184,69 +203,108 @@ export default function Login({ onLogin }: Props) {
             disabled={loading}
             style={{
               padding: "12px",
-              background: loading ? "#94a3b8" : "#2d8a4e",
+              background: loading ? "#94a3b8" : "linear-gradient(135deg, #1e6b3a 0%, #2d8a4e 100%)",
               color: "#fff",
               border: "none",
-              borderRadius: 8,
+              borderRadius: 9,
               fontSize: 14,
               fontWeight: 700,
               fontFamily: "var(--font-sans)",
               cursor: loading ? "not-allowed" : "pointer",
-              transition: "background 0.15s",
+              transition: "opacity 0.15s, transform 0.1s",
               marginTop: 4,
+              letterSpacing: "0.01em",
+              boxShadow: loading ? "none" : "0 2px 12px rgba(45,138,78,0.35)",
             }}
-            onMouseEnter={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#1e6b3a"; }}
-            onMouseLeave={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#2d8a4e"; }}
+            onMouseEnter={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.opacity = "0.92"; }}
+            onMouseLeave={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
           >
-            {loading ? "Signing in…" : "Sign In"}
+            {loading ? "Signing in…" : "Sign In →"}
           </button>
         </form>
 
-        {/* Demo credentials hint */}
+        {/* Demo credentials */}
         <div style={{
           marginTop: 28,
-          padding: "14px 16px",
-          background: "#f0faf3",
-          border: "1px solid #b3e6c4",
-          borderRadius: 8,
+          padding: "16px",
+          background: "#f8fafc",
+          border: "1px solid #e2e8f0",
+          borderRadius: 10,
         }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#2d8a4e", letterSpacing: "0.06em", marginBottom: 8 }}>DEMO CREDENTIALS</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {[
-              { username: "admin",   role: "Admin",   name: "Jean-Pierre" },
-              { username: "claudine", role: "Manager", name: "Claudine" },
-              { username: "theo",    role: "Staff",   name: "Théodore" },
-            ].map((u) => (
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", marginBottom: 10 }}>DEMO ACCOUNTS</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {demos.map((d) => (
               <button
-                key={u.username}
-                onClick={() => { setUsername(u.username); setPassword("password123"); }}
+                key={d.username}
+                onClick={() => { setUsername(d.username); setPassword("password123"); }}
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
                   alignItems: "center",
-                  padding: "5px 8px",
+                  gap: 10,
+                  padding: "7px 10px",
                   background: "transparent",
                   border: "1px solid transparent",
-                  borderRadius: 6,
+                  borderRadius: 7,
                   cursor: "pointer",
                   textAlign: "left",
-                  transition: "background 0.1s",
+                  transition: "background 0.12s, border-color 0.12s",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#d8f3e1")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                onMouseEnter={(e) => { (e.currentTarget.style.background = d.bg); (e.currentTarget.style.borderColor = d.color + "30"); }}
+                onMouseLeave={(e) => { (e.currentTarget.style.background = "transparent"); (e.currentTarget.style.borderColor = "transparent"); }}
               >
-                <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "#155229" }}>{u.username}</span>
-                <span style={{ fontSize: 11, color: "#4ead6b" }}>{u.role}</span>
+                <div style={{
+                  width: 28, height: 28, borderRadius: "50%",
+                  background: d.bg, color: d.color,
+                  fontSize: 10.5, fontWeight: 800,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  {d.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1e293b", fontFamily: "var(--font-mono)" }}>{d.username}</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8" }}>{d.name}</div>
+                </div>
+                <span style={{
+                  padding: "2px 8px", borderRadius: 12,
+                  background: d.bg, color: d.color,
+                  fontSize: 10, fontWeight: 700,
+                }}>
+                  {d.role}
+                </span>
               </button>
             ))}
           </div>
-          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>Password: <span style={{ fontFamily: "var(--font-mono)" }}>password123</span></div>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 8, borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
+            Password for all accounts: <span style={{ fontFamily: "var(--font-mono)", color: "#475569", fontWeight: 600 }}>password123</span>
+          </div>
         </div>
-
-        <p style={{ marginTop: 32, fontSize: 11, color: "#cbd5e1", textAlign: "center" }}>
-          BIT Final-Year Project · University of Rwanda · 2025
-        </p>
       </div>
     </div>
   );
 }
+
+function InputField({ label, children }: { label: string; placeholder?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label style={{ fontSize: 11.5, fontWeight: 700, color: "#475569", letterSpacing: "0.06em", display: "block", marginBottom: 7 }}>
+        {label.toUpperCase()}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputCss: React.CSSProperties = {
+  width: "100%",
+  padding: "11px 14px",
+  border: "1.5px solid #e2e8f0",
+  borderRadius: 8,
+  fontSize: 14,
+  fontFamily: "var(--font-sans)",
+  color: "#1e293b",
+  background: "#f8fafc",
+  outline: "none",
+  transition: "border-color 0.15s, box-shadow 0.15s",
+  boxSizing: "border-box",
+};
