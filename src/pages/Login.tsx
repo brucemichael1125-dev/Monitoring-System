@@ -2,13 +2,18 @@ import { useState } from "react";
 import { USERS } from "../data/mockData";
 import type { User } from "../data/mockData";
 
-interface Props {
-  onLogin: (user: User) => void;
-}
+interface Props { onLogin: (user: User) => void; }
+
+const demos = [
+  { username: "admin",    role: "Admin",   initials: "JP", color: "#b45309", bg: "#fef3c7", border: "#fde68a" },
+  { username: "claudine", role: "Manager", initials: "CL", color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe" },
+  { username: "theo",     role: "Staff",   initials: "TH", color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0" },
+];
 
 export default function Login({ onLogin }: Props) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw]     = useState(false);
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
 
@@ -21,277 +26,289 @@ export default function Login({ onLogin }: Props) {
       if (user && password === "password123") {
         onLogin(user);
       } else {
-        setError("Invalid username or password.");
+        setError("Invalid username or password. Try a demo account below.");
       }
       setLoading(false);
-    }, 600);
+    }, 700);
   }
-
-  const demos = [
-    { username: "admin",    role: "Admin",   name: "Jean-Pierre", color: "#b45309", bg: "#fef3c7" },
-    { username: "claudine", role: "Manager", name: "Claudine",    color: "#1d4ed8", bg: "#eff6ff" },
-    { username: "theo",     role: "Staff",   name: "Théodore",    color: "#15803d", bg: "#f0fdf4" },
-  ];
-
-  const features = [
-    "Track operational expenses by category",
-    "Monitor revenue from multiple streams",
-    "Budget vs actual variance analysis",
-    "Role-based access control",
-    "Automated financial reports",
-  ];
 
   return (
     <div style={{
       minHeight: "100vh",
+      background: "linear-gradient(160deg, #071d0e 0%, #09261A 40%, #0e3a1d 100%)",
       display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "24px 16px",
       fontFamily: "var(--font-sans)",
-      background: "#071d0e",
+      position: "relative",
+      overflow: "hidden",
     }}>
-      {/* Left panel — branding */}
+
+      {/* Background decorations */}
+      <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(45,138,78,0.18) 0%, transparent 65%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-15%", left: "-8%",  width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(78,173,107,0.12) 0%, transparent 65%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 900, height: 900, borderRadius: "50%", background: "radial-gradient(circle, rgba(14,58,29,0.4) 0%, transparent 60%)", pointerEvents: "none" }} />
+
+      {/* Card */}
       <div style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "60px 64px",
-        color: "#fff",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        {/* Decorative background circles */}
-        <div style={{
-          position: "absolute", top: -120, right: -120,
-          width: 420, height: 420, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(45,138,78,0.15) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "absolute", bottom: -80, left: -80,
-          width: 300, height: 300, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(78,173,107,0.1) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
-
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 52 }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 14,
-            background: "linear-gradient(135deg, #2d8a4e 0%, #4ead6b 100%)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 26, boxShadow: "0 4px 16px rgba(45,138,78,0.4)",
-          }}>🌿</div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 13, letterSpacing: "0.01em", lineHeight: 1.3 }}>AGRI-BUSINESS OPERATIONAL COST</div>
-            <div style={{ fontWeight: 800, fontSize: 13, letterSpacing: "0.01em", lineHeight: 1.3 }}>AND BUDGET MONITORING SYSTEM</div>
-            <div style={{ fontSize: 10, color: "#4ead6b", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", marginTop: 3 }}>RWANDA · 2025</div>
-          </div>
-        </div>
-
-        <h1 style={{
-          fontSize: 40, fontWeight: 800, lineHeight: 1.12,
-          letterSpacing: "-0.03em", margin: "0 0 20px",
-        }}>
-          Cost & Revenue<br />
-          <span style={{ color: "#4ead6b" }}>Monitoring</span><br />
-          System
-        </h1>
-
-        <p style={{ fontSize: 14.5, color: "rgba(255,255,255,0.58)", lineHeight: 1.7, maxWidth: 380, margin: "0 0 36px" }}>
-          Track operational expenses, monitor revenue streams, manage budgets and generate actionable reports — all in one place.
-        </p>
-
-        {/* Feature list */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 44 }}>
-          {features.map((f) => (
-            <div key={f} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{
-                width: 18, height: 18, borderRadius: "50%",
-                background: "rgba(78,173,107,0.2)",
-                border: "1px solid rgba(78,173,107,0.4)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
-              }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ead6b" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </div>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{f}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Stats */}
-        <div style={{ display: "flex", gap: 28 }}>
-          {[
-            { value: "20+", label: "Expenses Tracked" },
-            { value: "15+", label: "Revenue Records" },
-            { value: "8",   label: "Categories" },
-          ].map((s) => (
-            <div key={s.label}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "#4ead6b", fontFamily: "var(--font-mono)", lineHeight: 1 }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: 52, display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 18 }}>🇷🇼</span>
-          <span style={{ fontSize: 11.5, color: "rgba(255,255,255,0.3)" }}>BIT Final-Year Project · University of Rwanda · 2025</span>
-        </div>
-      </div>
-
-      {/* Right panel — login form */}
-      <div style={{
-        width: 448,
-        flexShrink: 0,
         background: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "56px 48px",
-        boxShadow: "-12px 0 60px rgba(0,0,0,0.25)",
+        borderRadius: 20,
+        width: "100%",
+        maxWidth: 440,
+        boxShadow: "0 40px 100px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06)",
+        overflow: "hidden",
+        position: "relative",
+        zIndex: 1,
       }}>
-        <div style={{ marginBottom: 32 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: "#0e3a1d", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
-            Welcome back
-          </h2>
-          <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>
-            Sign in to access your dashboard
-          </p>
-        </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <InputField label="Username" placeholder="e.g. admin">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. admin"
-              required
-              style={inputCss}
-            />
-          </InputField>
+        {/* Card top accent bar */}
+        <div style={{ height: 5, background: "linear-gradient(90deg, #1e6b3a, #2d8a4e, #4ead6b, #2d8a4e, #1e6b3a)" }} />
 
-          <InputField label="Password" placeholder="">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••"
-              required
-              style={inputCss}
-            />
-          </InputField>
+        <div style={{ padding: "40px 40px 36px" }}>
 
-          {error && (
+          {/* Logo + system name */}
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{
-              padding: "10px 14px",
-              background: "#fef2f2",
-              border: "1px solid #fecaca",
-              borderRadius: 8,
-              fontSize: 13,
-              color: "#b91c1c",
-              display: "flex", alignItems: "center", gap: 8,
-            }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              {error}
+              width: 64, height: 64, borderRadius: 18,
+              background: "linear-gradient(135deg, #1e6b3a 0%, #2d8a4e 50%, #4ead6b 100%)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              fontSize: 30, marginBottom: 16,
+              boxShadow: "0 8px 28px rgba(45,138,78,0.45)",
+            }}>🌿</div>
+            <div style={{ fontSize: 11.5, fontWeight: 800, color: "#0e3a1d", letterSpacing: "0.06em", lineHeight: 1.5 }}>
+              AGRI-BUSINESS OPERATIONAL COST
             </div>
-          )}
+            <div style={{ fontSize: 11.5, fontWeight: 800, color: "#0e3a1d", letterSpacing: "0.06em", lineHeight: 1.5 }}>
+              AND BUDGET MONITORING SYSTEM
+            </div>
+            <div style={{
+              display: "inline-block", marginTop: 8,
+              padding: "3px 12px", borderRadius: 20,
+              background: "#f0faf3", border: "1px solid #b3e6c4",
+              fontSize: 10, color: "#2d8a4e", fontWeight: 700,
+              letterSpacing: "0.1em", fontFamily: "var(--font-mono)",
+            }}>
+              RWANDA · 2025
+            </div>
+          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: "12px",
-              background: loading ? "#94a3b8" : "linear-gradient(135deg, #1e6b3a 0%, #2d8a4e 100%)",
-              color: "#fff",
-              border: "none",
-              borderRadius: 9,
-              fontSize: 14,
-              fontWeight: 700,
-              fontFamily: "var(--font-sans)",
-              cursor: loading ? "not-allowed" : "pointer",
-              transition: "opacity 0.15s, transform 0.1s",
-              marginTop: 4,
-              letterSpacing: "0.01em",
-              boxShadow: loading ? "none" : "0 2px 12px rgba(45,138,78,0.35)",
-            }}
-            onMouseEnter={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.opacity = "0.92"; }}
-            onMouseLeave={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
-          >
-            {loading ? "Signing in…" : "Sign In →"}
-          </button>
-        </form>
+          {/* Form header */}
+          <div style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
+              Welcome back
+            </h2>
+            <p style={{ fontSize: 13.5, color: "#94a3b8", margin: 0 }}>
+              Sign in to access your dashboard
+            </p>
+          </div>
 
-        {/* Demo credentials */}
-        <div style={{
-          marginTop: 28,
-          padding: "16px",
-          background: "#f8fafc",
-          border: "1px solid #e2e8f0",
-          borderRadius: 10,
-        }}>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", marginBottom: 10 }}>DEMO ACCOUNTS</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+            {/* Username */}
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", letterSpacing: "0.07em", display: "block", marginBottom: 7 }}>
+                USERNAME
+              </label>
+              <div style={{ position: "relative" }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  required
+                  autoComplete="username"
+                  style={{ ...inputCss, paddingLeft: 38 }}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", letterSpacing: "0.07em", display: "block", marginBottom: 7 }}>
+                PASSWORD
+              </label>
+              <div style={{ position: "relative" }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  autoComplete="current-password"
+                  style={{ ...inputCss, paddingLeft: 38, paddingRight: 42 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  style={{
+                    position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "#94a3b8", padding: 2, display: "flex", alignItems: "center",
+                    transition: "color 0.15s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#475569")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}
+                  title={showPw ? "Hide password" : "Show password"}
+                >
+                  {showPw ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div style={{
+                padding: "10px 14px", borderRadius: 9,
+                background: "#fef2f2", border: "1px solid #fecaca",
+                fontSize: 12.5, color: "#b91c1c",
+                display: "flex", alignItems: "flex-start", gap: 9,
+              }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                {error}
+              </div>
+            )}
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "13px",
+                background: loading ? "#94a3b8" : "linear-gradient(135deg, #1e6b3a 0%, #2d8a4e 60%, #3a9e5f 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                fontFamily: "var(--font-sans)",
+                cursor: loading ? "not-allowed" : "pointer",
+                letterSpacing: "0.02em",
+                boxShadow: loading ? "none" : "0 4px 18px rgba(45,138,78,0.4)",
+                transition: "opacity 0.15s, transform 0.1s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                marginTop: 4,
+              }}
+              onMouseEnter={(e) => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.opacity = "0.92"; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; } }}
+              onMouseLeave={(e) => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; (e.currentTarget as HTMLButtonElement).style.transform = "none"; } }}
+            >
+              {loading ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: "spin 0.8s linear infinite" }}>
+                    <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+                  </svg>
+                  Signing in…
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
+            <div style={{ flex: 1, height: 1, background: "#f1f5f9" }} />
+            <span style={{ fontSize: 11, color: "#cbd5e1", fontWeight: 600, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>DEMO ACCOUNTS</span>
+            <div style={{ flex: 1, height: 1, background: "#f1f5f9" }} />
+          </div>
+
+          {/* Demo accounts */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {demos.map((d) => (
               <button
                 key={d.username}
-                onClick={() => { setUsername(d.username); setPassword("password123"); }}
+                onClick={() => { setUsername(d.username); setPassword("password123"); setError(""); }}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "7px 10px",
-                  background: "transparent",
-                  border: "1px solid transparent",
-                  borderRadius: 7,
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "10px 13px",
+                  background: "#f8fafc",
+                  border: "1.5px solid #e2e8f0",
+                  borderRadius: 10,
                   cursor: "pointer",
                   textAlign: "left",
-                  transition: "background 0.12s, border-color 0.12s",
+                  transition: "all 0.14s ease",
+                  width: "100%",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget.style.background = d.bg); (e.currentTarget.style.borderColor = d.color + "30"); }}
-                onMouseLeave={(e) => { (e.currentTarget.style.background = "transparent"); (e.currentTarget.style.borderColor = "transparent"); }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget.style.background = d.bg);
+                  (e.currentTarget.style.borderColor = d.border);
+                  (e.currentTarget.style.transform = "translateY(-1px)");
+                  (e.currentTarget.style.boxShadow = `0 4px 12px ${d.color}18`);
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget.style.background = "#f8fafc");
+                  (e.currentTarget.style.borderColor = "#e2e8f0");
+                  (e.currentTarget.style.transform = "none");
+                  (e.currentTarget.style.boxShadow = "none");
+                }}
               >
                 <div style={{
-                  width: 28, height: 28, borderRadius: "50%",
-                  background: d.bg, color: d.color,
-                  fontSize: 10.5, fontWeight: 800,
+                  width: 34, height: 34, borderRadius: "50%",
+                  background: `linear-gradient(135deg, ${d.color}cc, ${d.color})`,
+                  color: "#fff", fontSize: 11, fontWeight: 800,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
+                  flexShrink: 0, boxShadow: `0 2px 8px ${d.color}30`,
                 }}>
-                  {d.name.slice(0, 2).toUpperCase()}
+                  {d.initials}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1e293b", fontFamily: "var(--font-mono)" }}>{d.username}</div>
-                  <div style={{ fontSize: 11, color: "#94a3b8" }}>{d.name}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", fontFamily: "var(--font-mono)" }}>{d.username}</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>Password: password123</div>
                 </div>
                 <span style={{
-                  padding: "2px 8px", borderRadius: 12,
+                  padding: "3px 10px", borderRadius: 20,
                   background: d.bg, color: d.color,
-                  fontSize: 10, fontWeight: 700,
+                  fontSize: 10.5, fontWeight: 700,
+                  border: `1px solid ${d.border}`,
+                  flexShrink: 0,
                 }}>
                   {d.role}
                 </span>
               </button>
             ))}
           </div>
-          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 8, borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
-            Password for all accounts: <span style={{ fontFamily: "var(--font-mono)", color: "#475569", fontWeight: 600 }}>password123</span>
+
+          {/* Footer */}
+          <div style={{ marginTop: 28, paddingTop: 20, borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
+            <span style={{ fontSize: 11, color: "#cbd5e1" }}>
+              BIT Final-Year Project · University of Rwanda · 2025
+            </span>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
 
-function InputField({ label, children }: { label: string; placeholder?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label style={{ fontSize: 11.5, fontWeight: 700, color: "#475569", letterSpacing: "0.06em", display: "block", marginBottom: 7 }}>
-        {label.toUpperCase()}
-      </label>
-      {children}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }
@@ -300,12 +317,12 @@ const inputCss: React.CSSProperties = {
   width: "100%",
   padding: "11px 14px",
   border: "1.5px solid #e2e8f0",
-  borderRadius: 8,
-  fontSize: 14,
+  borderRadius: 9,
+  fontSize: 13.5,
   fontFamily: "var(--font-sans)",
   color: "#1e293b",
   background: "#f8fafc",
   outline: "none",
-  transition: "border-color 0.15s, box-shadow 0.15s",
+  transition: "border-color 0.15s, box-shadow 0.15s, background 0.15s",
   boxSizing: "border-box",
 };
