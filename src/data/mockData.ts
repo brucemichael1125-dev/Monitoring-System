@@ -186,12 +186,29 @@ export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "
 export function getMonthlyData(
   revenues: Revenue[] = REVENUES,
   expenses: Expense[] = EXPENSES,
+  lookbackMonths = 6,
 ) {
-  const months = [1, 2, 3, 4, 5, 6];
-  return months.map((m) => {
-    const revenue  = revenues.filter((r) => new Date(r.revenue_date).getMonth() + 1 === m).reduce((s, r) => s + r.amount, 0);
-    const expenses_ = expenses.filter((e) => new Date(e.expense_date).getMonth() + 1 === m).reduce((s, e) => s + e.amount, 0);
-    return { month: MONTHS[m - 1], revenue, expenses: expenses_, profit: revenue - expenses_ };
+  // Anchor the window to the latest record date so charts always show real data.
+  // String comparison is used throughout to avoid UTC↔local timezone shifts.
+  const allDates = [...revenues.map((r) => r.revenue_date), ...expenses.map((e) => e.expense_date)];
+  const latest = allDates.length > 0
+    ? allDates.reduce((a, b) => (a > b ? a : b))
+    : new Date().toISOString().slice(0, 10);
+  const [refYear, refMonth] = latest.split("-").map(Number);
+
+  return Array.from({ length: lookbackMonths }, (_, i) => {
+    const offset = lookbackMonths - 1 - i;
+    let m = refMonth - offset;
+    let y = refYear;
+    while (m <= 0) { m += 12; y -= 1; }
+
+    const rev = revenues
+      .filter((r) => { const [ry, rm] = r.revenue_date.split("-").map(Number); return rm === m && ry === y; })
+      .reduce((s, r) => s + r.amount, 0);
+    const exp = expenses
+      .filter((e) => { const [ey, em] = e.expense_date.split("-").map(Number); return em === m && ey === y; })
+      .reduce((s, e) => s + e.amount, 0);
+    return { month: MONTHS[m - 1], revenue: rev, expenses: exp, profit: rev - exp };
   });
 }
 

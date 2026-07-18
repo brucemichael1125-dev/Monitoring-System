@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { User } from "./data/mockData";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -59,6 +60,10 @@ export default function App() {
       case "admin":   return <DashboardAdmin   user={user!} onNavigate={navigate} />;
       case "manager": return <DashboardManager user={user!} onNavigate={navigate} />;
       case "staff":   return <DashboardStaff   user={user!} onNavigate={navigate} />;
+      default: {
+        const _exhaustive: never = user!.role;
+        return <div style={{ padding: 40, textAlign: "center", color: "#64748b" }}>Unknown role: {String(_exhaustive)}</div>;
+      }
     }
   }
 
@@ -96,7 +101,9 @@ export default function App() {
       onLogout={() => { setUser(null); setPage("dashboard"); }}
       user={user}
     >
-      {renderPage()}
+      <ErrorBoundary key={page}>
+        {renderPage()}
+      </ErrorBoundary>
     </Layout>
   );
 }

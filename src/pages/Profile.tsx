@@ -15,9 +15,6 @@ export default function Profile({ user, onUpdateUser }: Props) {
   const { updateUser, expenses, revenues } = useAppData();
   const [form, setForm]       = useState({ full_name: user.full_name, email: user.email, phone: user.phone });
   const [saved, setSaved]     = useState(false);
-  const [pwForm, setPwForm]   = useState({ current: "", newPw: "", confirm: "" });
-  const [pwMsg, setPwMsg]     = useState("");
-  const [pwOk, setPwOk]       = useState(false);
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -26,16 +23,6 @@ export default function Profile({ user, onUpdateUser }: Props) {
     onUpdateUser(updated);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
-  }
-
-  function handleChangePassword(e: React.FormEvent) {
-    e.preventDefault();
-    if (pwForm.current !== "password123") { setPwMsg("Current password is incorrect."); setPwOk(false); return; }
-    if (pwForm.newPw.length < 6)         { setPwMsg("New password must be at least 6 characters."); setPwOk(false); return; }
-    if (pwForm.newPw !== pwForm.confirm)  { setPwMsg("Passwords do not match."); setPwOk(false); return; }
-    setPwMsg("Password updated successfully."); setPwOk(true);
-    setPwForm({ current: "", newPw: "", confirm: "" });
-    setTimeout(() => { setPwMsg(""); setPwOk(false); }, 3000);
   }
 
   const myExpenses = expenses.filter((e) => e.created_by === user.full_name);
@@ -137,37 +124,27 @@ export default function Profile({ user, onUpdateUser }: Props) {
           </form>
         </div>
 
-        {/* Change password */}
+        {/* Change password — disabled until backend */}
         <div style={{ background: "#fff", borderRadius: 12, padding: 24, border: "1px solid #e2e8f0" }}>
-          <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "#1e293b", margin: "0 0 18px" }}>Change Password</h3>
-          <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-            <Field label="Current Password">
-              <input type="password" value={pwForm.current} onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })} placeholder="••••••••" style={inputStyle} />
-            </Field>
-            <Field label="New Password">
-              <input type="password" value={pwForm.newPw} onChange={(e) => setPwForm({ ...pwForm, newPw: e.target.value })} placeholder="Min. 6 characters" style={inputStyle} />
-            </Field>
-            <Field label="Confirm New Password">
-              <input type="password" value={pwForm.confirm} onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })} placeholder="Repeat new password" style={inputStyle} />
-            </Field>
-            {pwMsg && (
-              <div style={{
-                padding: "9px 13px",
-                background: pwOk ? "#f0faf3" : "#fef2f2",
-                border: `1px solid ${pwOk ? "#b3e6c4" : "#fecaca"}`,
-                borderRadius: 8, fontSize: 12.5,
-                color: pwOk ? "#15803d" : "#b91c1c", fontWeight: 600,
-                display: "flex", alignItems: "center", gap: 7,
-              }}>
-                {pwOk
-                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                }
-                {pwMsg}
+          <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "#1e293b", margin: "0 0 14px" }}>Change Password</h3>
+          <div style={{
+            background: "#f8fafc", border: "1px solid #e2e8f0",
+            borderRadius: 8, padding: "16px 18px",
+            display: "flex", alignItems: "flex-start", gap: 12,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#475569", marginBottom: 4 }}>
+                Password management requires a backend
               </div>
-            )}
-            <button type="submit" style={{ ...secondaryBtn, marginTop: 4, justifyContent: "center" }}>Update Password</button>
-          </form>
+              <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
+                This feature will be available once the authentication service is deployed.
+                Passwords will be stored securely using bcrypt hashing.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -239,8 +216,3 @@ const primaryBtn: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 7, boxShadow: "0 2px 8px rgba(45,138,78,0.28)",
 };
 
-const secondaryBtn: React.CSSProperties = {
-  padding: "10px 20px", background: "#1e293b", color: "#fff", border: "none",
-  borderRadius: 8, fontSize: 13, fontWeight: 600, fontFamily: "var(--font-sans)", cursor: "pointer",
-  display: "flex", alignItems: "center", gap: 7,
-};
