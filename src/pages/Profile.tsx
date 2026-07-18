@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAppData } from "../data/AppDataContext";
 import { formatRWF } from "../data/mockData";
 import type { User } from "../data/mockData";
+import { supabase } from "../lib/supabase";
 
 interface Props { user: User; onUpdateUser: (u: User) => void; }
 
@@ -15,6 +16,19 @@ export default function Profile({ user, onUpdateUser }: Props) {
   const { updateUser, expenses, revenues } = useAppData();
   const [form, setForm]       = useState({ full_name: user.full_name, email: user.email, phone: user.phone });
   const [saved, setSaved]     = useState(false);
+  const [pwForm, setPwForm]   = useState({ newPw: "", confirm: "" });
+  const [pwMsg,  setPwMsg]    = useState("");
+  const [pwOk,   setPwOk]     = useState(false);
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPwMsg(""); setPwOk(false);
+    if (pwForm.newPw.length < 8) { setPwMsg("Password must be at least 8 characters."); return; }
+    if (pwForm.newPw !== pwForm.confirm) { setPwMsg("Passwords do not match."); return; }
+    const { error } = await supabase.auth.updateUser({ password: pwForm.newPw });
+    if (error) { setPwMsg(error.message); }
+    else { setPwOk(true); setPwMsg("Password updated successfully."); setPwForm({ newPw: "", confirm: "" }); }
+  }
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -124,27 +138,47 @@ export default function Profile({ user, onUpdateUser }: Props) {
           </form>
         </div>
 
-        {/* Change password — disabled until backend */}
+        {/* Change password */}
         <div style={{ background: "#fff", borderRadius: 12, padding: 24, border: "1px solid #e2e8f0" }}>
-          <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "#1e293b", margin: "0 0 14px" }}>Change Password</h3>
-          <div style={{
-            background: "#f8fafc", border: "1px solid #e2e8f0",
-            borderRadius: 8, padding: "16px 18px",
-            display: "flex", alignItems: "flex-start", gap: 12,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#475569", marginBottom: 4 }}>
-                Password management requires a backend
+          <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "#1e293b", margin: "0 0 18px" }}>Change Password</h3>
+          <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+            <Field label="New Password">
+              <input
+                type="password"
+                value={pwForm.newPw}
+                onChange={(e) => setPwForm({ ...pwForm, newPw: e.target.value })}
+                placeholder="At least 8 characters"
+                autoComplete="new-password"
+                style={inputStyle}
+              />
+            </Field>
+            <Field label="Confirm New Password">
+              <input
+                type="password"
+                value={pwForm.confirm}
+                onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
+                placeholder="Repeat new password"
+                autoComplete="new-password"
+                style={inputStyle}
+              />
+            </Field>
+            {pwMsg && (
+              <div style={{
+                padding: "9px 13px", borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+                display: "flex", alignItems: "center", gap: 7,
+                background: pwOk ? "#f0faf3" : "#fef2f2",
+                border: `1px solid ${pwOk ? "#b3e6c4" : "#fecaca"}`,
+                color: pwOk ? "#15803d" : "#b91c1c",
+              }}>
+                {pwOk
+                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                }
+                {pwMsg}
               </div>
-              <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
-                This feature will be available once the authentication service is deployed.
-                Passwords will be stored securely using bcrypt hashing.
-              </div>
-            </div>
-          </div>
+            )}
+            <button type="submit" style={{ ...primaryBtn, marginTop: 4, justifyContent: "center" }}>Update Password</button>
+          </form>
         </div>
       </div>
 

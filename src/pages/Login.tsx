@@ -1,30 +1,21 @@
 import { useState } from "react";
-import { useAppData } from "../data/AppDataContext";
-import type { User } from "../data/mockData";
 
-interface Props { onLogin: (user: User) => void; }
+interface Props { onLogin: (email: string, password: string) => Promise<string | null>; }
 
 export default function Login({ onLogin }: Props) {
-  const { users } = useAppData();
-  const [username, setUsername] = useState("");
+  const [email,    setEmail]   = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw]     = useState(false);
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [showPw,   setShowPw]   = useState(false);
+  const [error,    setError]    = useState("");
+  const [loading,  setLoading]  = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      const user = users.find((u) => u.username === username.trim().toLowerCase());
-      if (user && password === "password123") {
-        onLogin(user);
-      } else {
-        setError("Invalid username or password. Try a demo account below.");
-      }
-      setLoading(false);
-    }, 700);
+    const errMsg = await onLogin(email.trim().toLowerCase(), password);
+    if (errMsg) setError("Invalid email or password. Please try again.");
+    setLoading(false);
   }
 
   return (
@@ -101,23 +92,23 @@ export default function Login({ onLogin }: Props) {
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* Username */}
+            {/* Email */}
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", letterSpacing: "0.07em", display: "block", marginBottom: 7 }}>
-                USERNAME
+                EMAIL ADDRESS
               </label>
               <div style={{ position: "relative" }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                   style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
                 </svg>
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                   style={{ ...inputCss, paddingLeft: 38 }}
                 />
               </div>

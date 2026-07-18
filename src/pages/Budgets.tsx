@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useAppData } from "../data/AppDataContext";
-import { MONTHS, formatRWF, getCategoryName, getCategoryColor } from "../data/mockData";
+import { MONTHS, formatRWF } from "../data/mockData";
 import type { Budget } from "../data/mockData";
 
 export default function Budgets() {
   const { budgets, expenses, addBudget, updateBudget, deleteBudget, categories } = useAppData();
+  const catName  = (id: number) => categories.find((c) => c.category_id === id)?.category_name ?? "Unknown";
+  const catColor = (id: number) => categories.find((c) => c.category_id === id)?.color ?? "#94a3b8";
   const currentYear = new Date().getFullYear();
   const dataYear    = budgets.length > 0 ? budgets[0].year : currentYear;
   const yearOptions = [dataYear - 1, dataYear, dataYear + 1];
@@ -20,8 +22,8 @@ export default function Budgets() {
   function getActual(category_id: number, month: number, year: number): number {
     return expenses
       .filter((e) => {
-        const d = new Date(e.expense_date);
-        return e.category_id === category_id && d.getMonth() + 1 === month && d.getFullYear() === year;
+        const [ey, em] = e.expense_date.split("-").map(Number);
+        return e.category_id === category_id && em === month && ey === year;
       })
       .reduce((s, e) => s + e.amount, 0);
   }
@@ -112,7 +114,7 @@ export default function Budgets() {
               const vari   = b.budget_amount - actual;
               const pct    = Math.min(100, b.budget_amount > 0 ? Math.round((actual / b.budget_amount) * 100) : 0);
               const over   = actual > b.budget_amount;
-              const catColor = getCategoryColor(b.category_id);
+              const color = catColor(b.category_id);
               return (
                 <tr
                   key={b.budget_id}
@@ -122,8 +124,8 @@ export default function Budgets() {
                 >
                   <td style={{ padding: "13px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: 3, background: catColor, flexShrink: 0 }} />
-                      <span style={{ fontWeight: 600, color: "#1e293b" }}>{getCategoryName(b.category_id)}</span>
+                      <div style={{ width: 10, height: 10, borderRadius: 3, background: color, flexShrink: 0 }} />
+                      <span style={{ fontWeight: 600, color: "#1e293b" }}>{catName(b.category_id)}</span>
                     </div>
                   </td>
                   <td style={{ padding: "13px 16px", fontFamily: "var(--font-mono)", color: "#3b82f6", fontWeight: 600 }}>{formatRWF(b.budget_amount)}</td>

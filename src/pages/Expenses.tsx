@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAppData } from "../data/AppDataContext";
-import { formatRWF, getCategoryName, getCategoryColor } from "../data/mockData";
+import { formatRWF } from "../data/mockData";
 import type { Expense, User } from "../data/mockData";
 
 type SortKey = "expense_date" | "amount" | "category_id";
@@ -9,6 +9,8 @@ interface Props { user: User; }
 
 export default function Expenses({ user }: Props) {
   const { expenses, addExpense, updateExpense, deleteExpense, categories } = useAppData();
+  const catName  = (id: number) => categories.find((c) => c.category_id === id)?.category_name ?? "Unknown";
+  const catColor = (id: number) => categories.find((c) => c.category_id === id)?.color ?? "#94a3b8";
   const [search, setSearch]       = useState("");
   const [filterCat, setFilterCat] = useState(0);
   const [sortKey, setSortKey]     = useState<SortKey>("expense_date");
@@ -125,7 +127,7 @@ export default function Expenses({ user }: Props) {
           </thead>
           <tbody>
             {filtered.map((exp, i) => {
-              const catColor = getCategoryColor(exp.category_id);
+              const color = catColor(exp.category_id);
               return (
                 <tr
                   key={exp.expense_id}
@@ -139,11 +141,11 @@ export default function Expenses({ user }: Props) {
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: 5,
                       padding: "3px 9px", borderRadius: 20,
-                      background: catColor + "14", fontSize: 11, fontWeight: 600, color: catColor,
-                      border: `1px solid ${catColor}28`,
+                      background: color + "14", fontSize: 11, fontWeight: 600, color: color,
+                      border: `1px solid ${color}28`,
                     }}>
-                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: catColor, flexShrink: 0, display: "inline-block" }} />
-                      {getCategoryName(exp.category_id).split(" ")[0]}
+                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block" }} />
+                      {catName(exp.category_id).split(" ")[0]}
                     </span>
                   </td>
                   <td style={{ padding: "12px 16px", color: "#1e293b", maxWidth: 280 }}>{exp.description}</td>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { supabase } from "./lib/supabase";
 import type { User } from "./data/mockData";
+import { AppDataProvider } from "./data/AppDataContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
 import Login from "./pages/Login";
@@ -27,32 +29,85 @@ const PAGE_ACCESS: Record<string, string[]> = {
 };
 
 export default function App() {
-  const [user, setUser]   = useState<User | null>(null);
-  const [page, setPage]   = useState("dashboard");
+  const [user,        setUser]        = useState<User | null>(null);
+  const [authId,      setAuthId]      = useState<string | undefined>(undefined);
+  const [page,        setPage]        = useState("dashboard");
+  const [authLoading, setAuthLoading] = useState(true);
 
+  useEffect(() => {
+    // Restore existing session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) loadProfile(session.user.id);
+      else setAuthLoading(false);
+    });
+
+    // Listen for auth state changes (login / logout / token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) loadProfile(session.user.id);
+      else { setUser(null); setAuthId(undefined); setAuthLoading(false); }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function loadProfile(uid: string) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("auth_id", uid)
+      .single();
+    if (data) {
+      setUser(data as User);
+      setAuthId(uid);
+    }
+    setAuthLoading(false);
+  }
+
+  // Redirect non-admin away from register page
   useEffect(() => {
     if (user && page === "register" && user.role !== "admin") {
       setPage("dashboard");
     }
   }, [page, user]);
 
-  // Show register page full-screen (no sidebar layout)
-  if (!user) {
-    return <Login onLogin={(u) => { setUser(u); setPage("dashboard"); }} />;
+  async function handleLogin(email: string, password: string): Promise<string | null> {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return error ? error.message : null;
   }
 
-  // Register page is full-screen, outside the Layout shell
-  if (page === "register") {
-    if (user.role !== "admin") return null;  // useEffect redirects to dashboard
-    return <Register onBack={() => setPage("dashboard")} />;
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setAuthId(undefined);
+    setPage("dashboard");
+  }
+
+  // Full-screen loading while restoring session
+  if (authLoading) {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        height: "100vh", background: "#f8fafc",
+        color: "#64748b", fontSize: 14, fontFamily: "var(--font-sans)", gap: 10,
+      }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d8a4e" strokeWidth="2.5"
+          strokeLinecap="round" style={{ animation: "spin 0.8s linear infinite" }}>
+          <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+        </svg>
+        Loading…
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // Unauthenticated: show Login
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
   }
 
   function navigate(target: string) {
     const allowed = PAGE_ACCESS[user!.role] ?? [];
-    if (allowed.includes(target)) {
-      setPage(target);
-    }
-    // silently ignore pages the role can't access
+    if (allowed.includes(target)) setPage(target);
   }
 
   function renderDashboard() {
@@ -94,16 +149,24 @@ export default function App() {
     }
   }
 
+  // Authenticated: wrap everything in AppDataProvider
   return (
-    <Layout
-      currentPage={page}
-      onNavigate={navigate}
-      onLogout={() => { setUser(null); setPage("dashboard"); }}
-      user={user}
-    >
-      <ErrorBoundary key={page}>
-        {renderPage()}
-      </ErrorBoundary>
-    </Layout>
+    <AppDataProvider authId={authId}>
+      {page === "register" && user.role === "admin"
+        ? <Register onBack={() => setPage("dashboard")} />
+        : (
+          <Layout
+            currentPage={page}
+            onNavigate={navigate}
+            onLogout={handleLogout}
+            user={user}
+          >
+            <ErrorBoundary key={page}>
+              {renderPage()}
+            </ErrorBoundary>
+          </Layout>
+        )
+      }
+    </AppDataProvider>
   );
 }

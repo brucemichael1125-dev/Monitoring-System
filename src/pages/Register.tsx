@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "../lib/supabase";
 import { useAppData } from "../data/AppDataContext";
 import type { Role } from "../data/mockData";
 
@@ -51,7 +52,7 @@ const ROLE_INFO: Record<Role, { label: string; description: string; color: strin
 };
 
 export default function Register({ onBack }: Props) {
-  const { addUser, users } = useAppData();
+  const { users } = useAppData();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [success, setSuccess] = useState(false);
@@ -72,16 +73,41 @@ export default function Register({ onBack }: Props) {
     return Object.keys(e).length === 0;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => {
-      addUser({ full_name: form.full_name, username: form.username, role: form.role, email: form.email, phone: form.phone });
-      setRegistered({ name: form.full_name, username: form.username, role: form.role });
-      setSuccess(true);
+
+    // 1. Create Supabase auth user
+    const { data, error: signUpErr } = await supabase.auth.signUp({
+      email:    form.email,
+      password: form.password,
+    });
+
+    if (signUpErr || !data.user) {
+      setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
       setLoading(false);
-    }, 800);
+      return;
+    }
+
+    // 2. Insert profile row
+    const { error: profileErr } = await supabase.from("profiles").insert({
+      auth_id:   data.user.id,
+      full_name: form.full_name,
+      username:  form.username,
+      role:      form.role,
+      email:     form.email,
+      phone:     form.phone,
+    });
+
+    setLoading(false);
+    if (profileErr) {
+      setErrors({ ...errors, email: profileErr.message });
+      return;
+    }
+
+    setRegistered({ name: form.full_name, username: form.username, role: form.role });
+    setSuccess(true);
   }
 
   function registerAnother() {
