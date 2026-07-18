@@ -4,12 +4,6 @@ import type { User } from "../data/mockData";
 
 interface Props { onLogin: (user: User) => void; }
 
-const demos = [
-  { username: "admin",    role: "Admin",   initials: "JP", color: "#b45309", bg: "#fef3c7", border: "#fde68a" },
-  { username: "claudine", role: "Manager", initials: "CL", color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe" },
-  { username: "theo",     role: "Staff",   initials: "TH", color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0" },
-];
-
 export default function Login({ onLogin }: Props) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -233,69 +227,6 @@ export default function Login({ onLogin }: Props) {
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
-            <div style={{ flex: 1, height: 1, background: "#f1f5f9" }} />
-            <span style={{ fontSize: 11, color: "#cbd5e1", fontWeight: 600, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>DEMO ACCOUNTS</span>
-            <div style={{ flex: 1, height: 1, background: "#f1f5f9" }} />
-          </div>
-
-          {/* Demo accounts */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {demos.map((d) => (
-              <button
-                key={d.username}
-                onClick={() => { setUsername(d.username); setPassword("password123"); setError(""); }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "10px 13px",
-                  background: "#f8fafc",
-                  border: "1.5px solid #e2e8f0",
-                  borderRadius: 10,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "all 0.14s ease",
-                  width: "100%",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget.style.background = d.bg);
-                  (e.currentTarget.style.borderColor = d.border);
-                  (e.currentTarget.style.transform = "translateY(-1px)");
-                  (e.currentTarget.style.boxShadow = `0 4px 12px ${d.color}18`);
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget.style.background = "#f8fafc");
-                  (e.currentTarget.style.borderColor = "#e2e8f0");
-                  (e.currentTarget.style.transform = "none");
-                  (e.currentTarget.style.boxShadow = "none");
-                }}
-              >
-                <div style={{
-                  width: 34, height: 34, borderRadius: "50%",
-                  background: `linear-gradient(135deg, ${d.color}cc, ${d.color})`,
-                  color: "#fff", fontSize: 11, fontWeight: 800,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0, boxShadow: `0 2px 8px ${d.color}30`,
-                }}>
-                  {d.initials}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", fontFamily: "var(--font-mono)" }}>{d.username}</div>
-                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>Password: password123</div>
-                </div>
-                <span style={{
-                  padding: "3px 10px", borderRadius: 20,
-                  background: d.bg, color: d.color,
-                  fontSize: 10.5, fontWeight: 700,
-                  border: `1px solid ${d.border}`,
-                  flexShrink: 0,
-                }}>
-                  {d.role}
-                </span>
-              </button>
-            ))}
-          </div>
 
           {/* Footer */}
           <div style={{ marginTop: 28, paddingTop: 20, borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
