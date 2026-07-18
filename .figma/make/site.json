@@ -1,0 +1,8 @@
+{
+  "title": "Monitoring System",
+  "description": "A monitoring system dashboard application",
+  "language": "en",
+  "robots": {
+    "index": true
+  }
+}
