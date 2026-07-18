@@ -3,13 +3,17 @@ import { BUDGETS, CATEGORIES, EXPENSES, MONTHS, formatRWF, getCategoryName, getC
 import type { Budget } from "../data/mockData";
 
 export default function Budgets() {
+  const currentYear = new Date().getFullYear();
+  const dataYear    = BUDGETS.length > 0 ? BUDGETS[0].year : currentYear;
+  const yearOptions = [dataYear - 1, dataYear, dataYear + 1];
+
   const [budgets, setBudgets]     = useState<Budget[]>(BUDGETS);
-  const [filterMonth, setFilterMonth] = useState(1);
-  const [filterYear, setFilterYear]   = useState(2025);
+  const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
+  const [filterYear, setFilterYear]   = useState(dataYear);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing]     = useState<Budget | null>(null);
   const [deleteId, setDeleteId]   = useState<number | null>(null);
-  const [form, setForm]           = useState({ category_id: 1, budget_amount: "", month: 1, year: 2025 });
+  const [form, setForm]           = useState({ category_id: 1, budget_amount: "", month: new Date().getMonth() + 1, year: dataYear });
 
   const filtered = budgets.filter((b) => b.month === filterMonth && b.year === filterYear);
 
@@ -72,7 +76,7 @@ export default function Budgets() {
           {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
         </select>
         <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} style={{ ...inputStyle, maxWidth: 100 }}>
-          {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
+          {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
         <span style={{ fontSize: 12.5, color: "#94a3b8" }}>
           {filtered.length} budget {filtered.length === 1 ? "line" : "lines"} for{" "}
@@ -197,7 +201,7 @@ export default function Budgets() {
             </FormField>
             <FormField label="Year">
               <select value={form.year} onChange={(e) => setForm({ ...form, year: Number(e.target.value) })} style={inputStyle}>
-                {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
+                {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             </FormField>
           </div>

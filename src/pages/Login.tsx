@@ -89,7 +89,7 @@ export default function Login({ onLogin }: Props) {
               fontSize: 10, color: "#2d8a4e", fontWeight: 700,
               letterSpacing: "0.1em", fontFamily: "var(--font-mono)",
             }}>
-              RWANDA · 2025
+              RWANDA · {new Date().getFullYear()}
             </div>
           </div>
 
@@ -300,7 +300,7 @@ export default function Login({ onLogin }: Props) {
           {/* Footer */}
           <div style={{ marginTop: 28, paddingTop: 20, borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
             <span style={{ fontSize: 11, color: "#cbd5e1" }}>
-              BIT Final-Year Project · University of Rwanda · 2025
+              © {new Date().getFullYear()} Agri-Business Cost &amp; Budget Monitoring System · Rwanda
             </span>
           </div>
         </div>

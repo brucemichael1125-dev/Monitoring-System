@@ -20,6 +20,7 @@ function ChartTip({ active, payload, label }: { active?: boolean; payload?: { co
 }
 
 export default function Reports() {
+  const dataYear      = EXPENSES.length > 0 ? new Date(EXPENSES[0].expense_date).getFullYear() : new Date().getFullYear();
   const totalRevenue  = REVENUES.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = EXPENSES.reduce((s, e) => s + e.amount, 0);
   const profit        = totalRevenue - totalExpenses;
@@ -28,7 +29,7 @@ export default function Reports() {
   const monthlySummary = [1, 2, 3, 4, 5, 6].map((m) => {
     const revenue  = REVENUES.filter((r) => new Date(r.revenue_date).getMonth() + 1 === m).reduce((s, r) => s + r.amount, 0);
     const expenses = EXPENSES.filter((e) => new Date(e.expense_date).getMonth() + 1 === m).reduce((s, e) => s + e.amount, 0);
-    const budget   = BUDGETS.filter((b) => b.month === m && b.year === 2025).reduce((s, b) => s + b.budget_amount, 0);
+    const budget   = BUDGETS.filter((b) => b.month === m && b.year === dataYear).reduce((s, b) => s + b.budget_amount, 0);
     return { month: MONTHS[m - 1], revenue, expenses, profit: revenue - expenses, budget };
   });
 
@@ -61,7 +62,7 @@ export default function Reports() {
       <div className="page-hdr">
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0e3a1d", margin: 0, letterSpacing: "-0.02em" }}>Reports</h1>
-          <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Financial summary · Agri-Business Operational Cost &amp; Budget Monitoring System · Jan–Jun 2025</p>
+          <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Financial summary · Jan–Jun {dataYear}</p>
         </div>
         <button
           onClick={() => window.print()}
@@ -97,7 +98,7 @@ export default function Reports() {
       {/* Monthly summary table */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
         <div style={{ padding: "15px 20px", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Monthly Summary — 2025</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Monthly Summary — {dataYear}</span>
           <span style={{ padding: "2px 8px", borderRadius: 12, background: "#f1f5f9", color: "#64748b", fontSize: 11, fontWeight: 600 }}>Jan–Jun</span>
         </div>
         <div className="tbl-scroll">
@@ -160,7 +161,7 @@ export default function Reports() {
         {/* Revenue vs Expenses */}
         <div style={{ background: "#fff", borderRadius: 12, padding: 22, border: "1px solid #e2e8f0" }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", marginBottom: 3 }}>Monthly Revenue vs Expenses</div>
-          <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 16 }}>Jan – Jun 2025</div>
+          <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 16 }}>Jan – Jun {dataYear}</div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={monthlySummary} margin={{ left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -239,7 +240,7 @@ export default function Reports() {
       {/* Budget vs Actual chart */}
       <div style={{ background: "#fff", borderRadius: 12, padding: 22, border: "1px solid #e2e8f0" }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", marginBottom: 3 }}>Budget vs Actual — by Category</div>
-        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 16 }}>All budgeted categories · 2025</div>
+        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 16 }}>All budgeted categories · {dataYear}</div>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={catBreakdown} margin={{ left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />

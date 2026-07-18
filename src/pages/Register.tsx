@@ -177,7 +177,7 @@ export default function Register({ onBack }: Props) {
         </div>
 
         <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 40 }}>
-          Admin access required · Agri-Business Monitoring System · Rwanda 2025
+          Admin access required · Rwanda · © {new Date().getFullYear()}
         </p>
       </div>
 

@@ -68,6 +68,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export default function Dashboard({ user }: Props) {
+  const dataYear = EXPENSES.length > 0 ? new Date(EXPENSES[0].expense_date).getFullYear() : new Date().getFullYear();
   const totalRevenue = REVENUES.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = EXPENSES.reduce((s, e) => s + e.amount, 0);
   const profit = totalRevenue - totalExpenses;
@@ -107,7 +108,7 @@ export default function Dashboard({ user }: Props) {
         <div style={{ background: "#fff", borderRadius: 12, padding: 22, border: "1px solid #e2e8f0" }}>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Revenue vs Expenses</div>
-            <div style={{ fontSize: 12, color: "#94a3b8" }}>Jan – Jun 2025 (in RWF)</div>
+            <div style={{ fontSize: 12, color: "#94a3b8" }}>Jan – Jun {dataYear} (in RWF)</div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={monthly} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>

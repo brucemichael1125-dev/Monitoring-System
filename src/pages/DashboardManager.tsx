@@ -23,6 +23,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 export default function DashboardManager({ user, onNavigate }: Props) {
+  const dataYear      = EXPENSES.length > 0 ? new Date(EXPENSES[0].expense_date).getFullYear() : new Date().getFullYear();
   const totalRevenue  = REVENUES.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = EXPENSES.reduce((s, e) => s + e.amount, 0);
   const profit  = totalRevenue - totalExpenses;
@@ -118,7 +119,7 @@ export default function DashboardManager({ user, onNavigate }: Props) {
         <div style={{ background: "#fff", borderRadius: 12, padding: "22px 22px 16px", border: "1px solid #e2e8f0" }}>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Monthly Revenue vs Expenses</div>
-            <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>Jan – Jun 2025 · Agri-Business Operational Cost &amp; Budget Monitoring System</div>
+            <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>Jan – Jun {dataYear}</div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={monthly} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
@@ -190,7 +191,7 @@ export default function DashboardManager({ user, onNavigate }: Props) {
         <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Budget vs Actual Spending</div>
-            <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>Cumulative Jan–Jun 2025 by category</div>
+            <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>Cumulative Jan–Jun {dataYear} by category</div>
           </div>
           <button
             onClick={() => onNavigate("budgets")}
