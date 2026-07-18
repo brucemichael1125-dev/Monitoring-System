@@ -49,7 +49,7 @@ export default function DashboardManager({ user, onNavigate }: Props) {
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="page-hdr">
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#3b82f6" }} />
@@ -61,14 +61,14 @@ export default function DashboardManager({ user, onNavigate }: Props) {
             {new Date().toLocaleDateString("en-RW", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <ActionBtn label="Reports" onClick={() => onNavigate("reports")} bg="#1e293b" />
           <ActionBtn label="Manage Budgets" onClick={() => onNavigate("budgets")} bg="#3b82f6" />
         </div>
       </div>
 
       {/* KPI cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+      <div style={{ display: "grid", gap: 14 }} className="rg-4">
         {kpiCards.map((k) => (
           <div key={k.label} style={{
             background: k.bg, border: `1px solid ${k.border}`,
@@ -112,7 +112,7 @@ export default function DashboardManager({ user, onNavigate }: Props) {
       )}
 
       {/* Charts row */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gap: 16 }} className="rg-2-1">
 
         {/* Area chart */}
         <div style={{ background: "#fff", borderRadius: 12, padding: "22px 22px 16px", border: "1px solid #e2e8f0" }}>
@@ -217,7 +217,7 @@ export default function DashboardManager({ user, onNavigate }: Props) {
       </div>
 
       {/* Recent expenses + revenue */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gap: 16 }} className="rg-2">
         <RecentTable
           title="Recent Expenses"
           accent="#ef4444"

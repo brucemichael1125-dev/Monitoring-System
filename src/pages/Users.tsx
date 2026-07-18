@@ -42,7 +42,7 @@ export default function Users() {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="page-hdr">
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0e3a1d", margin: 0, letterSpacing: "-0.02em" }}>User Management</h1>
           <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Admin-only · Manage system users and access roles</p>
@@ -54,7 +54,7 @@ export default function Users() {
       </div>
 
       {/* Role summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gap: 12 }} className="rg-3">
         {(["admin", "manager", "staff"] as Role[]).map((role) => {
           const count = users.filter((u) => u.role === role).length;
           const c = ROLE_COLORS[role];
@@ -144,7 +144,7 @@ export default function Users() {
       {/* Add/Edit Modal */}
       {showModal && (
         <Modal title={editing ? "Edit User" : "Add New User"} onClose={() => setShowModal(false)}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gap: 14 }} className="rg-2">
             <FormField label="Full Name" colSpan>
               <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="e.g. Amina Mukamana" style={inputStyle} />
             </FormField>
@@ -155,7 +155,7 @@ export default function Users() {
           <FormField label="Email">
             <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="amina@greenharvest.rw" style={inputStyle} />
           </FormField>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gap: 14 }} className="rg-2">
             <FormField label="Phone" colSpan>
               <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+250 788 000 000" style={inputStyle} />
             </FormField>
@@ -212,7 +212,7 @@ function PhoneIcon() {
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-      <div style={{ background: "#fff", borderRadius: 16, padding: 28, width: 480, boxShadow: "0 24px 64px rgba(0,0,0,0.18)", border: "1px solid #e2e8f0" }}>
+      <div style={{ background: "#fff", borderRadius: 16, padding: 28, width: "min(480px, calc(100vw - 32px))", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", border: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1e293b", margin: 0 }}>{title}</h3>
           <button onClick={onClose} style={{ background: "#f1f5f9", border: "none", width: 28, height: 28, borderRadius: 7, cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>

@@ -54,7 +54,7 @@ export default function Budgets() {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="page-hdr">
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0e3a1d", margin: 0, letterSpacing: "-0.02em" }}>Budgets</h1>
           <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Plan and compare budget vs actual spending</p>
@@ -81,7 +81,7 @@ export default function Budgets() {
       </div>
 
       {/* Summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gap: 12 }} className="rg-3">
         <SumCard label="Total Budgeted" value={formatRWF(totalBudget)} color="#3b82f6" bg="#eff6ff" border="#bfdbfe" />
         <SumCard label="Total Actual"   value={formatRWF(totalActual)} color="#ef4444" bg="#fef2f2" border="#fecaca" />
         <SumCard
@@ -95,6 +95,7 @@ export default function Budgets() {
 
       {/* Budget vs Actual table */}
       <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <div className="tbl-scroll">
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
@@ -175,6 +176,7 @@ export default function Budgets() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {showModal && (
@@ -233,7 +235,7 @@ function SumCard({ label, value, color, bg, border }: { label: string; value: st
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-      <div style={{ background: "#fff", borderRadius: 16, padding: 28, width: 460, boxShadow: "0 24px 64px rgba(0,0,0,0.18)", border: "1px solid #e2e8f0" }}>
+      <div style={{ background: "#fff", borderRadius: 16, padding: 28, width: "min(460px, calc(100vw - 32px))", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", border: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1e293b", margin: 0 }}>{title}</h3>
           <button onClick={onClose} style={{ background: "#f1f5f9", border: "none", width: 28, height: 28, borderRadius: 7, cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>

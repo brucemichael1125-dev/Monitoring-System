@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { User } from "../data/mockData";
 
 // SVG icon system
@@ -76,39 +76,73 @@ interface Props {
 }
 
 export default function Layout({ currentPage, onNavigate, onLogout, user, children }: Props) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const navItems = getNav(user.role);
-  const badge = ROLE_BADGE[user.role] ?? ROLE_BADGE.staff;
-  const sections = Array.from(new Set(navItems.map((n) => n.section))) as SectionKey[];
-  const initials = user.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-  const today = new Date().toLocaleDateString("en-RW", { weekday: "short", month: "short", day: "numeric" });
+  const [isMobile, setIsMobile]     = useState(() => window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
+
+  useEffect(() => {
+    function onResize() {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true);
+    }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  function handleNav(page: string) {
+    onNavigate(page);
+    if (isMobile) setSidebarOpen(false);
+  }
+
+  const navItems    = getNav(user.role);
+  const badge       = ROLE_BADGE[user.role] ?? ROLE_BADGE.staff;
+  const sections    = Array.from(new Set(navItems.map((n) => n.section))) as SectionKey[];
+  const initials    = user.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  const today       = new Date().toLocaleDateString("en-RW", { weekday: "short", month: "short", day: "numeric" });
   const currentLabel = navItems.find((n) => n.page === currentPage)?.label ?? currentPage;
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#f1f5f9", overflow: "hidden" }}>
 
-      {/* ── Sidebar ─────────────────────────────────────── */}
+      {/* ── Mobile backdrop ────────────────────────────────── */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed", inset: 0,
+            background: "rgba(9,38,26,0.5)",
+            backdropFilter: "blur(2px)",
+            zIndex: 49,
+          }}
+        />
+      )}
+
+      {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside style={{
-        width: sidebarOpen ? 238 : 64,
-        minWidth: sidebarOpen ? 238 : 64,
+        position: isMobile ? "fixed" : "relative",
+        top: isMobile ? 0 : undefined,
+        left: isMobile ? 0 : undefined,
+        height: "100vh",
+        width: isMobile ? 260 : (sidebarOpen ? 238 : 64),
+        minWidth: isMobile ? 260 : (sidebarOpen ? 238 : 64),
         background: "linear-gradient(180deg, #09261A 0%, #0e3a1d 60%, #0c3018 100%)",
         display: "flex",
         flexDirection: "column",
-        transition: "width 0.24s cubic-bezier(0.4,0,0.2,1), min-width 0.24s cubic-bezier(0.4,0,0.2,1)",
         overflow: "hidden",
-        zIndex: 10,
+        zIndex: isMobile ? 50 : 10,
         flexShrink: 0,
         boxShadow: "3px 0 16px rgba(0,0,0,0.22)",
+        transform: isMobile ? (sidebarOpen ? "translateX(0)" : "translateX(-100%)") : "none",
+        transition: isMobile
+          ? "transform 0.28s cubic-bezier(0.4,0,0.2,1)"
+          : "width 0.24s cubic-bezier(0.4,0,0.2,1), min-width 0.24s cubic-bezier(0.4,0,0.2,1)",
       }}>
 
         {/* Logo */}
         <div style={{
-          padding: sidebarOpen ? "18px 16px 14px" : "18px 14px 14px",
+          padding: (sidebarOpen || isMobile) ? "18px 16px 14px" : "18px 14px 14px",
           borderBottom: "1px solid rgba(255,255,255,0.07)",
-          display: "flex",
-          alignItems: "center",
-          gap: 11,
-          minHeight: 64,
+          display: "flex", alignItems: "center", gap: 11, minHeight: 64,
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
@@ -117,7 +151,7 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
             fontSize: 18, flexShrink: 0,
             boxShadow: "0 2px 10px rgba(45,138,78,0.45)",
           }}>🌿</div>
-          {sidebarOpen && (
+          {(sidebarOpen || isMobile) && (
             <div style={{ overflow: "hidden" }}>
               <div style={{ color: "#fff", fontWeight: 800, fontSize: 13.5, whiteSpace: "nowrap", letterSpacing: "-0.01em", lineHeight: 1.2 }}>GreenHarvest</div>
               <div style={{ color: "#4ead6b", fontSize: 9, fontFamily: "var(--font-mono)", letterSpacing: "0.14em", whiteSpace: "nowrap", marginTop: 2, opacity: 0.85 }}>AGRIBUSINESS LTD</div>
@@ -125,14 +159,13 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
           )}
         </div>
 
-        {/* User card */}
-        {sidebarOpen && (
+        {/* User card (sidebar) */}
+        {(sidebarOpen || isMobile) && (
           <div style={{ padding: "10px 10px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
             <div style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 10,
-              padding: "9px 11px",
+              borderRadius: 10, padding: "9px 11px",
               display: "flex", alignItems: "center", gap: 10,
             }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
@@ -169,7 +202,7 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
             const items = navItems.filter((n) => n.section === section);
             return (
               <div key={section} style={{ marginBottom: 4 }}>
-                {sidebarOpen && (
+                {(sidebarOpen || isMobile) && (
                   <div style={{
                     fontSize: 9, fontWeight: 700,
                     color: "rgba(255,255,255,0.2)",
@@ -185,27 +218,20 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
                   return (
                     <button
                       key={item.page}
-                      onClick={() => onNavigate(item.page)}
-                      title={!sidebarOpen ? item.label : undefined}
+                      onClick={() => handleNav(item.page)}
+                      title={(!sidebarOpen && !isMobile) ? item.label : undefined}
                       style={{
                         width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: sidebarOpen ? "8.5px 10px 8.5px 12px" : "8.5px 0",
-                        justifyContent: sidebarOpen ? "flex-start" : "center",
-                        borderRadius: 8,
-                        border: "none",
-                        cursor: "pointer",
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: (sidebarOpen || isMobile) ? "8.5px 10px 8.5px 12px" : "8.5px 0",
+                        justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
+                        borderRadius: 8, border: "none", cursor: "pointer",
                         background: active ? "rgba(78,173,107,0.14)" : "transparent",
                         color: active ? "#fff" : "rgba(255,255,255,0.48)",
-                        fontSize: 13,
-                        fontWeight: active ? 600 : 400,
-                        fontFamily: "var(--font-sans)",
-                        textAlign: "left",
+                        fontSize: 13, fontWeight: active ? 600 : 400,
+                        fontFamily: "var(--font-sans)", textAlign: "left",
                         transition: "all 0.14s ease",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
+                        whiteSpace: "nowrap", overflow: "hidden",
                         marginBottom: 1,
                         boxShadow: active ? "inset 3px 0 0 #4ead6b" : "none",
                       }}
@@ -225,7 +251,7 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
                       <span style={{ color: active ? "#4ead6b" : "inherit", display: "flex", alignItems: "center" }}>
                         <NavIcon page={item.page} />
                       </span>
-                      {sidebarOpen && (
+                      {(sidebarOpen || isMobile) && (
                         <span style={{ overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>{item.label}</span>
                       )}
                     </button>
@@ -240,18 +266,15 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
         <div style={{ padding: "8px 8px 14px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
           <button
             onClick={onLogout}
-            title={!sidebarOpen ? "Sign Out" : undefined}
+            title={(!sidebarOpen && !isMobile) ? "Sign Out" : undefined}
             style={{
-              width: "100%", display: "flex", alignItems: "center",
-              gap: 10,
-              padding: sidebarOpen ? "8.5px 10px 8.5px 12px" : "8.5px 0",
-              justifyContent: sidebarOpen ? "flex-start" : "center",
-              borderRadius: 8, border: "none",
-              cursor: "pointer", background: "transparent",
-              color: "rgba(255,255,255,0.32)", fontSize: 13,
-              fontFamily: "var(--font-sans)", textAlign: "left",
-              whiteSpace: "nowrap", overflow: "hidden",
-              transition: "all 0.14s ease",
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: (sidebarOpen || isMobile) ? "8.5px 10px 8.5px 12px" : "8.5px 0",
+              justifyContent: (sidebarOpen || isMobile) ? "flex-start" : "center",
+              borderRadius: 8, border: "none", cursor: "pointer",
+              background: "transparent", color: "rgba(255,255,255,0.32)",
+              fontSize: 13, fontFamily: "var(--font-sans)", textAlign: "left",
+              whiteSpace: "nowrap", overflow: "hidden", transition: "all 0.14s ease",
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.12)";
@@ -267,27 +290,24 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
               <polyline points="16 17 21 12 16 7"/>
               <line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
-            {sidebarOpen && <span>Sign Out</span>}
+            {(sidebarOpen || isMobile) && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
 
-      {/* ── Main ─────────────────────────────────────────── */}
+      {/* ── Main ─────────────────────────────────────────────── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
 
         {/* Topbar */}
         <header style={{
-          height: 56,
-          background: "#fff",
+          height: 56, background: "#fff",
           borderBottom: "1px solid #e8edf2",
-          display: "flex",
-          alignItems: "center",
+          display: "flex", alignItems: "center",
           justifyContent: "space-between",
-          padding: "0 24px 0 18px",
-          flexShrink: 0,
-          gap: 12,
+          padding: "0 16px 0 14px",
+          flexShrink: 0, gap: 8,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             {/* Hamburger */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -295,7 +315,7 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
                 background: "none", border: "none", cursor: "pointer",
                 color: "#64748b", padding: "6px 7px", borderRadius: 7,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "background 0.13s, color 0.13s",
+                flexShrink: 0, transition: "background 0.13s, color 0.13s",
               }}
               onMouseEnter={(e) => { (e.currentTarget.style.background = "#f1f5f9"); (e.currentTarget.style.color = "#334155"); }}
               onMouseLeave={(e) => { (e.currentTarget.style.background = "none"); (e.currentTarget.style.color = "#64748b"); }}
@@ -306,21 +326,27 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
               </svg>
             </button>
 
-            <div style={{ width: 1, height: 20, background: "#e2e8f0" }} />
+            <div className="tb-hide-sm" style={{ width: 1, height: 20, background: "#e2e8f0", flexShrink: 0 }} />
 
             {/* Breadcrumb */}
-            <nav style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ fontSize: 12, color: "#94a3b8" }}>GreenHarvest</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-              <span style={{ fontSize: 12.5, fontWeight: 650, color: "#334155" }}>{currentLabel}</span>
+            <nav className="tb-hide-sm" style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+              <span style={{ fontSize: 12, color: "#94a3b8", whiteSpace: "nowrap" }}>GreenHarvest</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+              <span style={{ fontSize: 12.5, fontWeight: 650, color: "#334155", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentLabel}</span>
             </nav>
+
+            {/* Mobile page title (only shows on small screens) */}
+            <span className="tb-hide-sm" style={{ display: "none" }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#0e3a1d" }} aria-hidden="true">
+              <span className="tb-hide-sm">{/* hidden on sm+ via above nav */}</span>
+            </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             {/* Date */}
-            <span style={{ fontSize: 11.5, color: "#94a3b8", fontFamily: "var(--font-mono)", letterSpacing: "0.02em" }}>{today}</span>
+            <span className="tb-hide-md" style={{ fontSize: 11.5, color: "#94a3b8", fontFamily: "var(--font-mono)", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>{today}</span>
 
-            <div style={{ width: 1, height: 20, background: "#e2e8f0" }} />
+            <div className="tb-hide-md" style={{ width: 1, height: 20, background: "#e2e8f0" }} />
 
             {/* Notification bell */}
             <button
@@ -340,32 +366,33 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
               </svg>
             </button>
 
-            <div style={{ width: 1, height: 20, background: "#e2e8f0" }} />
+            <div className="tb-hide-md" style={{ width: 1, height: 20, background: "#e2e8f0" }} />
 
             {/* Role badge */}
-            <span style={{
+            <span className="tb-hide-md" style={{
               padding: "3px 10px", borderRadius: 20,
               background: badge.bg, color: badge.text,
               fontSize: 11, fontWeight: 700,
               textTransform: "capitalize", letterSpacing: "0.02em",
+              whiteSpace: "nowrap",
             }}>
               {user.role}
             </span>
 
             {/* Avatar + name */}
             <button
-              onClick={() => onNavigate("profile")}
+              onClick={() => handleNav("profile")}
               style={{
-                display: "flex", alignItems: "center", gap: 9,
+                display: "flex", alignItems: "center", gap: 7,
                 cursor: "pointer", background: "none", border: "none",
-                padding: "4px 8px 4px 6px", borderRadius: 8,
+                padding: "4px 6px 4px 4px", borderRadius: 8,
                 transition: "background 0.13s",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
             >
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1e293b", lineHeight: 1.2 }}>{user.full_name}</div>
+              <div className="tb-hide-md" style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1e293b", lineHeight: 1.2, whiteSpace: "nowrap" }}>{user.full_name}</div>
                 <div style={{ fontSize: 10, color: "#94a3b8", fontFamily: "var(--font-mono)" }}>@{user.username}</div>
               </div>
               <div style={{
@@ -373,8 +400,8 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
                 background: "linear-gradient(135deg, #0e3a1d 0%, #1e6b3a 100%)",
                 color: "#4ead6b", fontSize: 12, fontWeight: 800,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                border: "2px solid #e2e8f0",
-                letterSpacing: "0.02em",
+                border: "2px solid #e2e8f0", letterSpacing: "0.02em",
+                flexShrink: 0,
               }}>
                 {initials}
               </div>
@@ -383,7 +410,7 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
         </header>
 
         {/* Page content */}
-        <main style={{ flex: 1, overflow: "auto", padding: "24px 26px" }} className="page-enter">
+        <main className="main-content page-enter">
           {children}
         </main>
       </div>

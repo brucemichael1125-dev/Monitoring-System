@@ -58,7 +58,7 @@ export default function Reports() {
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="page-hdr">
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0e3a1d", margin: 0, letterSpacing: "-0.02em" }}>Reports</h1>
           <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Financial summary · GreenHarvest Agribusiness Ltd · Jan–Jun 2025</p>
@@ -84,7 +84,7 @@ export default function Reports() {
       </div>
 
       {/* KPI row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+      <div style={{ display: "grid", gap: 14 }} className="rg-4">
         {kpis.map((k) => (
           <div key={k.label} style={{ background: k.bg, border: `1px solid ${k.border}`, borderTop: `3px solid ${k.color}`, borderRadius: 12, padding: "18px 20px" }}>
             <div style={{ fontSize: 10.5, fontWeight: 700, color: "#64748b", letterSpacing: "0.07em", marginBottom: 8 }}>{k.label.toUpperCase()}</div>
@@ -100,6 +100,7 @@ export default function Reports() {
           <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Monthly Summary — 2025</span>
           <span style={{ padding: "2px 8px", borderRadius: 12, background: "#f1f5f9", color: "#64748b", fontSize: 11, fontWeight: 600 }}>Jan–Jun</span>
         </div>
+        <div className="tbl-scroll">
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#f8fafc" }}>
@@ -150,10 +151,11 @@ export default function Reports() {
             </tr>
           </tfoot>
         </table>
+        </div>
       </div>
 
       {/* Charts row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gap: 16 }} className="rg-2">
 
         {/* Revenue vs Expenses */}
         <div style={{ background: "#fff", borderRadius: 12, padding: 22, border: "1px solid #e2e8f0" }}>
@@ -193,6 +195,7 @@ export default function Reports() {
         <div style={{ padding: "15px 20px", borderBottom: "1px solid #e2e8f0" }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Expense Breakdown by Category</div>
         </div>
+        <div className="tbl-scroll">
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
@@ -230,6 +233,7 @@ export default function Reports() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Budget vs Actual chart */}

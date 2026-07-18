@@ -44,7 +44,7 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="page-hdr">
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#2d8a4e" }} />
@@ -56,14 +56,14 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
             {new Date().toLocaleDateString("en-RW", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <ActionBtn label="Manage Users" onClick={() => onNavigate("users")} variant="secondary" />
           <ActionBtn label="+ Register User" onClick={() => onNavigate("register")} variant="primary" />
         </div>
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10 }}>
+      <div style={{ display: "grid", gap: 10 }} className="rg-6">
         {kpiStrip.map((k) => (
           <div key={k.label} style={{
             background: k.bg,
@@ -80,7 +80,7 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
       </div>
 
       {/* Financial overview */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+      <div style={{ display: "grid", gap: 14 }} className="rg-3">
         <FinCard label="Total Revenue"  value={formatRWF(totalRevenue)}  sub={`${REVENUES.length} transactions`}  color="#2d8a4e" bg="#f0faf3" border="#b3e6c4" icon={<TrendUpIcon />} />
         <FinCard label="Total Expenses" value={formatRWF(totalExpenses)} sub={`${EXPENSES.length} cost records`}  color="#ef4444" bg="#fef2f2" border="#fecaca" icon={<TrendDownIcon />} />
         <FinCard label="Net Profit"     value={formatRWF(netProfit)}     sub={netProfit > 0 ? "Business profitable" : "Operating at loss"} color={netProfit > 0 ? "#d97706" : "#ef4444"} bg={netProfit > 0 ? "#fffbeb" : "#fef2f2"} border={netProfit > 0 ? "#fde68a" : "#fecaca"} icon={<CoinIcon />} />
@@ -109,7 +109,7 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
 
         {/* Tab: System Overview */}
         {activeTab === "overview" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gap: 14 }} className="rg-2">
 
             {/* Expense Categories */}
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
@@ -205,6 +205,7 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
         {activeTab === "users" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+              <div className="tbl-scroll">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
@@ -253,6 +254,7 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
             <div style={{ textAlign: "right" }}>
               <ActionBtn label="Full User Management →" onClick={() => onNavigate("users")} variant="primary" />

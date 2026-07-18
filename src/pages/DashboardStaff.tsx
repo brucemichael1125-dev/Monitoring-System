@@ -65,7 +65,7 @@ export default function DashboardStaff({ user, onNavigate }: Props) {
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gap: 12 }} className="rg-4">
         {statCards.map((card) => (
           <div key={card.label} style={{
             background: card.bg, border: `1px solid ${card.border}`,
@@ -80,7 +80,7 @@ export default function DashboardStaff({ user, onNavigate }: Props) {
       </div>
 
       {/* Main area */}
-      <div style={{ display: "grid", gridTemplateColumns: "370px 1fr", gap: 18 }}>
+      <div style={{ display: "grid", gap: 18 }} className="rg-form">
 
         {/* Quick Add */}
         <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden" }}>

@@ -78,7 +78,7 @@ export default function Profile({ user }: Props) {
           </div>
 
           {/* Stats row */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div style={{ display: "grid", gap: 12 }} className="rg-4">
             <StatBox value={String(myExpenses.length)} label="Expenses Recorded" color="#ef4444" bg="#fef2f2" />
             <StatBox value={String(myRevenues.length)} label="Revenues Recorded" color="#2d8a4e" bg="#f0faf3" />
             <StatBox value={formatRWF(myExpenses.reduce((s, e) => s + e.amount, 0))} label="Total Expenses Value" color="#ef4444" bg="#fef2f2" mono />
@@ -104,7 +104,7 @@ export default function Profile({ user }: Props) {
       </div>
 
       {/* Edit forms */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+      <div style={{ display: "grid", gap: 18 }} className="rg-2">
 
         {/* Edit profile */}
         <div style={{ background: "#fff", borderRadius: 12, padding: 24, border: "1px solid #e2e8f0" }}>
@@ -169,7 +169,7 @@ export default function Profile({ user }: Props) {
       {/* Recent activity */}
       <div style={{ background: "#fff", borderRadius: 12, padding: 24, border: "1px solid #e2e8f0" }}>
         <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "#1e293b", margin: "0 0 18px" }}>My Recent Activity</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div style={{ display: "grid", gap: 20 }} className="rg-2">
           <ActivityList
             title="Expenses I Recorded"
             items={myExpenses.slice(0, 5).map((e) => ({ label: e.description, amount: formatRWF(e.amount), amountColor: "#ef4444" }))}
