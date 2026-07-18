@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { User } from "./data/mockData";
 
 import Login from "./pages/Login";
@@ -29,6 +29,12 @@ export default function App() {
   const [user, setUser]   = useState<User | null>(null);
   const [page, setPage]   = useState("dashboard");
 
+  useEffect(() => {
+    if (user && page === "register" && user.role !== "admin") {
+      setPage("dashboard");
+    }
+  }, [page, user]);
+
   // Show register page full-screen (no sidebar layout)
   if (!user) {
     return <Login onLogin={(u) => { setUser(u); setPage("dashboard"); }} />;
@@ -36,10 +42,7 @@ export default function App() {
 
   // Register page is full-screen, outside the Layout shell
   if (page === "register") {
-    if (user.role !== "admin") {
-      setPage("dashboard");
-      return null;
-    }
+    if (user.role !== "admin") return null;  // useEffect redirects to dashboard
     return <Register onBack={() => setPage("dashboard")} />;
   }
 

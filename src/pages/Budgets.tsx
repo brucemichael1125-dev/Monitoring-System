@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAppData } from "../data/AppDataContext";
 import { MONTHS, formatRWF, getCategoryName, getCategoryColor } from "../data/mockData";
+import type { Budget } from "../data/mockData";
 
 export default function Budgets() {
   const { budgets, expenses, addBudget, updateBudget, deleteBudget, categories } = useAppData();
