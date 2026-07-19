@@ -52,7 +52,7 @@ const ROLE_INFO: Record<Role, { label: string; description: string; color: strin
 };
 
 export default function Register({ onBack }: Props) {
-  const { users } = useAppData();
+  const { users, refreshUsers } = useAppData();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [success, setSuccess] = useState(false);
@@ -110,9 +110,12 @@ export default function Register({ onBack }: Props) {
 
     setLoading(false);
     if (profileErr) {
-      setErrors({ ...errors, email: profileErr.message });
+      setErrors({ ...errors, email: "Profile creation failed: " + profileErr.message });
       return;
     }
+
+    // 4. Refresh the users list in context so Users page reflects the new account
+    await refreshUsers();
 
     setRegistered({ name: form.full_name, username: form.username, role: form.role });
     setSuccess(true);

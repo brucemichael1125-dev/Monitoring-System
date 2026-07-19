@@ -10,6 +10,7 @@ interface AppData {
   categories: Category[];
   loading:    boolean;
 
+  refreshUsers(): Promise<void>;
   addUser(u: Omit<User, "user_id" | "created_at">): void;
   updateUser(u: User): void;
   deleteUser(id: number): void;
@@ -67,6 +68,11 @@ export function AppDataProvider({ children, authId }: Props) {
   }, [authId]);
 
   // ── Users (profiles table) ───────────────────────────────────────────────
+  const refreshUsers = useCallback(async () => {
+    const { data } = await supabase.from("profiles").select("*").order("user_id");
+    if (data) setUsers(data as User[]);
+  }, []);
+
   const addUser = useCallback((data: Omit<User, "user_id" | "created_at">) => {
     supabase.from("profiles").insert({
       auth_id:   data.auth_id ?? "",
@@ -253,7 +259,7 @@ export function AppDataProvider({ children, authId }: Props) {
 
   const value: AppData = {
     users, expenses, revenues, budgets, categories, loading,
-    addUser, updateUser, deleteUser,
+    refreshUsers, addUser, updateUser, deleteUser,
     addExpense, updateExpense, deleteExpense,
     addRevenue, updateRevenue, deleteRevenue,
     addBudget, updateBudget, deleteBudget,
