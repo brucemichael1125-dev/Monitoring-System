@@ -1,23 +1,47 @@
-# figma-make-app
+# GreenHarvest Monitoring System
 
-React + Vite + Tailwind CSS project running inside Figma Make.
+React + Vite + TypeScript + Tailwind CSS SPA deployed on Vercel, backed by Supabase (PostgreSQL + Auth).
 
-## Development Server
+## Stack
 
-A Vite development server is **always running** on `$PORT` (default 8443). You don't need to start it manually.
+- **Frontend**: React 19, TypeScript, Tailwind CSS v4, Recharts
+- **Backend**: Supabase (PostgreSQL + Row Level Security + Auth)
+- **Hosting**: Vercel (frontend), Supabase cloud (database + auth)
+- **Build tool**: Vite 8
 
-- Preview URL: The user can access the running app through the preview panel
-- Hot reload: Changes to source files are reflected immediately
+## Development
+
+```bash
+npm install
+npm run dev      # starts dev server on http://localhost:5173
+npm run build    # production build → dist/
+npm run preview  # preview production build locally
+```
+
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+VITE_SUPABASE_URL=https://YOUR-PROJECT-ID.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-public-key-here
+```
+
+These are also set in Vercel → Project Settings → Environment Variables.
 
 ## Key Files
 
-- `src/App.tsx` - Main application component
-- `src/main.tsx` - React entry point
-- `src/index.css` - Global styles and Tailwind CSS import
-- `package.json` - Dependencies and scripts
-- `vite.config.ts` - Vite configuration
-- `.mise.toml` - Toolchain versions (Node.js, pnpm)
+- `src/App.tsx` — Main application, auth state, routing
+- `src/main.tsx` — React entry point
+- `src/lib/supabase.ts` — Supabase client
+- `src/data/AppDataContext.tsx` — Global data context (expenses, revenues, budgets)
+- `src/index.css` — Global styles and Tailwind CSS import
+- `supabase/seed.sql` — Database schema + seed data (run in Supabase SQL Editor)
+
+## Deployment
+
+Vercel auto-deploys from the `main` branch. No build configuration needed beyond environment variables.
 
 ## Styling
 
-This project uses **Tailwind CSS v4** for styling. Use Tailwind utility classes directly in JSX. Tailwind is loaded via the Vite plugin — no PostCSS config needed.
+Tailwind CSS v4 via the Vite plugin — no PostCSS config needed. Use utility classes directly in JSX.
