@@ -18,6 +18,7 @@ export default function Expenses({ user }: Props) {
   const [editing, setEditing]     = useState<Expense | null>(null);
   const [deleteId, setDeleteId]   = useState<number | null>(null);
   const [form, setForm]           = useState({ category_id: 1, amount: "", description: "", expense_date: "" });
+  const [formError, setFormError] = useState("");
 
   const filtered = expenses
     .filter((e) =>
@@ -34,18 +35,23 @@ export default function Expenses({ user }: Props) {
 
   function openAdd() {
     setEditing(null);
+    setFormError("");
     setForm({ category_id: 1, amount: "", description: "", expense_date: new Date().toISOString().slice(0, 10) });
     setShowModal(true);
   }
 
   function openEdit(exp: Expense) {
     setEditing(exp);
+    setFormError("");
     setForm({ category_id: exp.category_id, amount: String(exp.amount), description: exp.description, expense_date: exp.expense_date });
     setShowModal(true);
   }
 
   function handleSave() {
-    if (!form.description || !form.amount || !form.expense_date) return;
+    if (!form.description.trim()) { setFormError("Description is required."); return; }
+    if (!form.amount || Number(form.amount) <= 0) { setFormError("Enter a valid amount."); return; }
+    if (!form.expense_date) { setFormError("Date is required."); return; }
+    setFormError("");
     if (editing) {
       updateExpense({ ...editing, ...form, amount: Number(form.amount) });
     } else {
@@ -206,6 +212,11 @@ export default function Expenses({ user }: Props) {
           <FormField label="Date">
             <input type="date" value={form.expense_date} onChange={(e) => setForm({ ...form, expense_date: e.target.value })} style={inputStyle} />
           </FormField>
+          {formError && (
+            <div style={{ padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, fontSize: 12.5, color: "#b91c1c" }}>
+              {formError}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
             <button onClick={() => setShowModal(false)} style={ghostBtn}>Cancel</button>
             <button onClick={handleSave} style={{ ...primaryBtn, padding: "9px 20px", boxShadow: "none" }}>Save Expense</button>

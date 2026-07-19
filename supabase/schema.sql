@@ -41,7 +41,7 @@ create table if not exists expenses (
   description   text            not null check (length(trim(description)) >= 2),
   expense_date  date            not null,
   created_by    text            not null,       -- display name (denormalised for speed)
-  created_by_id text,                           -- auth.users.id for RLS
+  created_by_id text            not null,       -- auth.users.id for RLS
   created_at    timestamptz     not null default now()
 );
 
@@ -57,7 +57,7 @@ create table if not exists revenues (
   description   text            not null,
   revenue_date  date            not null,
   created_by    text            not null,
-  created_by_id text,
+  created_by_id text            not null,
   created_at    timestamptz     not null default now()
 );
 

@@ -143,7 +143,7 @@ export default function App() {
       case "revenue":   return <RevenuePage user={user!} />;
       case "budgets":   return <Budgets />;
       case "reports":   return <Reports />;
-      case "users":     return <Users />;
+      case "users":     return <Users onNavigate={navigate} />;
       case "profile":   return <Profile user={user!} onUpdateUser={(u) => setUser(u)} />;
       default:          return renderDashboard();
     }

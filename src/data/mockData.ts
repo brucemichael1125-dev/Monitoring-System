@@ -30,21 +30,23 @@ export interface Category {
 }
 
 export interface Expense {
-  expense_id:   number;
-  category_id:  number;
-  amount:       number;
-  description:  string;
-  expense_date: string;
-  created_by:   string;
+  expense_id:    number;
+  category_id:   number;
+  amount:        number;
+  description:   string;
+  expense_date:  string;
+  created_by:    string;
+  created_by_id?: string;
 }
 
 export interface Revenue {
-  revenue_id:   number;
-  source:       string;
-  amount:       number;
-  description:  string;
-  revenue_date: string;
-  created_by:   string;
+  revenue_id:    number;
+  source:        string;
+  amount:        number;
+  description:   string;
+  revenue_date:  string;
+  created_by:    string;
+  created_by_id?: string;
 }
 
 export interface Budget {

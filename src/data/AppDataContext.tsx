@@ -109,8 +109,9 @@ export function AppDataProvider({ children, authId }: Props) {
 
   // ── Expenses ─────────────────────────────────────────────────────────────
   const addExpense = useCallback((data: Omit<Expense, "expense_id">) => {
-    const tempId = Date.now();
-    setExpenses((prev) => [{ ...data, expense_id: tempId }, ...prev]);
+    if (!authId) { console.error("addExpense: no authId — user not authenticated"); return; }
+    const tempId = -(Date.now()); // negative to avoid collision with real serial IDs
+    setExpenses((prev) => [{ ...data, expense_id: tempId, created_by_id: authId }, ...prev]);
     supabase.from("expenses").insert({
       category_id:   data.category_id,
       amount:        data.amount,
@@ -157,8 +158,9 @@ export function AppDataProvider({ children, authId }: Props) {
 
   // ── Revenues ─────────────────────────────────────────────────────────────
   const addRevenue = useCallback((data: Omit<Revenue, "revenue_id">) => {
-    const tempId = Date.now();
-    setRevenues((prev) => [{ ...data, revenue_id: tempId }, ...prev]);
+    if (!authId) { console.error("addRevenue: no authId — user not authenticated"); return; }
+    const tempId = -(Date.now());
+    setRevenues((prev) => [{ ...data, revenue_id: tempId, created_by_id: authId }, ...prev]);
     supabase.from("revenues").insert({
       source:        data.source,
       amount:        data.amount,

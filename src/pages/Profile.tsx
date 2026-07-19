@@ -39,8 +39,12 @@ export default function Profile({ user, onUpdateUser }: Props) {
     setTimeout(() => setSaved(false), 2500);
   }
 
-  const myExpenses = expenses.filter((e) => e.created_by === user.full_name);
-  const myRevenues = revenues.filter((r) => r.created_by === user.full_name);
+  const myExpenses = expenses.filter((e) =>
+    e.created_by_id ? e.created_by_id === user.auth_id : e.created_by === user.full_name
+  );
+  const myRevenues = revenues.filter((r) =>
+    r.created_by_id ? r.created_by_id === user.auth_id : r.created_by === user.full_name
+  );
   const initials   = user.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
   const rc         = ROLE_CONFIG[user.role] ?? ROLE_CONFIG.staff;
 

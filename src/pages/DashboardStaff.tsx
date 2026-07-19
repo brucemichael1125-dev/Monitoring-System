@@ -7,12 +7,24 @@ interface Props { user: User; onNavigate: (page: string) => void; }
 
 export default function DashboardStaff({ user, onNavigate }: Props) {
   const { expenses, revenues, categories, addExpense, addRevenue } = useAppData();
-  const myExpenses = expenses.filter((e) => e.created_by === user.full_name);
-  const myRevenues = revenues.filter((r) => r.created_by === user.full_name);
+  const myExpenses = expenses.filter((e) =>
+    e.created_by_id ? e.created_by_id === user.auth_id : e.created_by === user.full_name
+  );
+  const myRevenues = revenues.filter((r) =>
+    r.created_by_id ? r.created_by_id === user.auth_id : r.created_by === user.full_name
+  );
 
-  const latestMonth = new Date().getMonth() + 1;
-  const thisMonthExp = myExpenses.filter((e) => new Date(e.expense_date).getMonth() + 1 === latestMonth);
-  const thisMonthRev = myRevenues.filter((r) => new Date(r.revenue_date).getMonth() + 1 === latestMonth);
+  const now = new Date();
+  const latestMonth = now.getMonth() + 1;
+  const latestYear  = now.getFullYear();
+  const thisMonthExp = myExpenses.filter((e) => {
+    const [ey, em] = e.expense_date.split("-").map(Number);
+    return em === latestMonth && ey === latestYear;
+  });
+  const thisMonthRev = myRevenues.filter((r) => {
+    const [ry, rm] = r.revenue_date.split("-").map(Number);
+    return rm === latestMonth && ry === latestYear;
+  });
 
   const myTotalExpenses = myExpenses.reduce((s, e) => s + e.amount, 0);
   const myTotalRevenues = myRevenues.reduce((s, r) => s + r.amount, 0);

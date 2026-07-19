@@ -12,6 +12,7 @@ export default function RevenuePage({ user }: Props) {
   const [editing, setEditing]   = useState<Revenue | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm]         = useState({ source: "", amount: "", description: "", revenue_date: "" });
+  const [formError, setFormError] = useState("");
 
   const filtered = revenues
     .filter((r) => !search || r.source.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase()))
@@ -21,18 +22,23 @@ export default function RevenuePage({ user }: Props) {
 
   function openAdd() {
     setEditing(null);
+    setFormError("");
     setForm({ source: "", amount: "", description: "", revenue_date: new Date().toISOString().slice(0, 10) });
     setShowModal(true);
   }
 
   function openEdit(rev: Revenue) {
     setEditing(rev);
+    setFormError("");
     setForm({ source: rev.source, amount: String(rev.amount), description: rev.description, revenue_date: rev.revenue_date });
     setShowModal(true);
   }
 
   function handleSave() {
-    if (!form.source || !form.amount || !form.revenue_date) return;
+    if (!form.source.trim()) { setFormError("Source is required."); return; }
+    if (!form.amount || Number(form.amount) <= 0) { setFormError("Enter a valid amount."); return; }
+    if (!form.revenue_date) { setFormError("Date is required."); return; }
+    setFormError("");
     if (editing) {
       updateRevenue({ ...editing, ...form, amount: Number(form.amount) });
     } else {
@@ -189,6 +195,11 @@ export default function RevenuePage({ user }: Props) {
           <FormField label="Date">
             <input type="date" value={form.revenue_date} onChange={(e) => setForm({ ...form, revenue_date: e.target.value })} style={inputStyle} />
           </FormField>
+          {formError && (
+            <div style={{ padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, fontSize: 12.5, color: "#b91c1c" }}>
+              {formError}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
             <button onClick={() => setShowModal(false)} style={ghostBtn}>Cancel</button>
             <button onClick={handleSave} style={{ ...primaryBtn, padding: "9px 20px", boxShadow: "none" }}>Save Revenue</button>

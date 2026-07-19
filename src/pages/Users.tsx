@@ -8,8 +8,10 @@ const ROLE_COLORS: Record<Role, { bg: string; text: string; border: string; grad
   staff:   { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0", gradient: "linear-gradient(135deg, #14532d, #16a34a)" },
 };
 
-export default function Users() {
-  const { users, addUser, updateUser, deleteUser } = useAppData();
+interface Props { onNavigate: (page: string) => void; }
+
+export default function Users({ onNavigate }: Props) {
+  const { users, updateUser, deleteUser } = useAppData();
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing]   = useState<User | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -17,10 +19,7 @@ export default function Users() {
   const [usernameError, setUsernameError] = useState("");
 
   function openAdd() {
-    setEditing(null);
-    setForm({ full_name: "", username: "", email: "", phone: "", role: "staff" });
-    setUsernameError("");
-    setShowModal(true);
+    onNavigate("register");
   }
 
   function openEdit(u: User) {
@@ -31,15 +30,11 @@ export default function Users() {
   }
 
   function handleSave() {
-    if (!form.full_name || !form.username) return;
-    const duplicate = users.find((u) => u.username === form.username && u.user_id !== editing?.user_id);
+    if (!form.full_name || !form.username || !editing) return;
+    const duplicate = users.find((u) => u.username === form.username && u.user_id !== editing.user_id);
     if (duplicate) { setUsernameError("Username is already taken."); return; }
     setUsernameError("");
-    if (editing) {
-      updateUser({ ...editing, ...form });
-    } else {
-      addUser(form);
-    }
+    updateUser({ ...editing, ...form });
     setShowModal(false);
   }
 

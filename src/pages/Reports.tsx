@@ -22,15 +22,17 @@ function ChartTip({ active, payload, label }: { active?: boolean; payload?: { co
 
 export default function Reports() {
   const { expenses, revenues, budgets, categories } = useAppData();
-  const dataYear      = expenses.length > 0 ? new Date(expenses[0].expense_date).getFullYear() : new Date().getFullYear();
+  const dataYear      = expenses.length > 0
+    ? Math.max(...expenses.map((e) => Number(e.expense_date.split("-")[0])))
+    : new Date().getFullYear();
   const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const profit        = totalRevenue - totalExpenses;
   const margin        = totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : "0";
 
   const monthlySummary = [1, 2, 3, 4, 5, 6].map((m) => {
-    const revenue  = revenues.filter((r) => new Date(r.revenue_date).getMonth() + 1 === m).reduce((s, r) => s + r.amount, 0);
-    const expTotal = expenses.filter((e) => new Date(e.expense_date).getMonth() + 1 === m).reduce((s, e) => s + e.amount, 0);
+    const revenue  = revenues.filter((r) => { const [, rm] = r.revenue_date.split("-").map(Number); return rm === m; }).reduce((s, r) => s + r.amount, 0);
+    const expTotal = expenses.filter((e) => { const [, em] = e.expense_date.split("-").map(Number); return em === m; }).reduce((s, e) => s + e.amount, 0);
     const budget   = budgets.filter((b) => b.month === m && b.year === dataYear).reduce((s, b) => s + b.budget_amount, 0);
     return { month: MONTHS[m - 1], revenue, expenses: expTotal, profit: revenue - expTotal, budget };
   });
