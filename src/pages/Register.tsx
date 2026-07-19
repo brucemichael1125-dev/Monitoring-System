@@ -78,6 +78,9 @@ export default function Register({ onBack }: Props) {
     if (!validate()) return;
     setLoading(true);
 
+    // Save the admin's session before signUp replaces it
+    const { data: { session: adminSession } } = await supabase.auth.getSession();
+
     // 1. Create Supabase auth user
     const { data, error: signUpErr } = await supabase.auth.signUp({
       email:    form.email,
@@ -85,12 +88,14 @@ export default function Register({ onBack }: Props) {
     });
 
     if (signUpErr || !data.user) {
+      // Restore admin session even on failure
+      if (adminSession) await supabase.auth.setSession(adminSession);
       setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
       setLoading(false);
       return;
     }
 
-    // 2. Insert profile row
+    // 2. Insert profile row (while still authenticated as the new user — RLS allows insert)
     const { error: profileErr } = await supabase.from("profiles").insert({
       auth_id:   data.user.id,
       full_name: form.full_name,
@@ -99,6 +104,9 @@ export default function Register({ onBack }: Props) {
       email:     form.email,
       phone:     form.phone,
     });
+
+    // 3. Restore the admin's session regardless of profile insert outcome
+    if (adminSession) await supabase.auth.setSession(adminSession);
 
     setLoading(false);
     if (profileErr) {
