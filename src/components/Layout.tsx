@@ -67,34 +67,6 @@ const SECTION_LABELS: Record<SectionKey, string> = {
   account: "ACCOUNT",
 };
 
-function DemoBanner() {
-  const [dismissed, setDismissed] = useState(false);
-  if (dismissed) return null;
-  return (
-    <div style={{
-      background: "#fffbeb", border: "1px solid #fde68a",
-      borderLeft: "4px solid #f59e0b",
-      borderRadius: 8, padding: "9px 14px",
-      display: "flex", alignItems: "center", gap: 10,
-      marginBottom: 18, fontSize: 12.5,
-    }}>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <span style={{ color: "#92400e", flex: 1 }}>
-        <strong>Demo mode</strong> — data is stored in memory only. All changes are lost when the page is refreshed.
-        A production backend is required for real data persistence.
-      </span>
-      <button
-        onClick={() => setDismissed(true)}
-        aria-label="Dismiss demo notice"
-        style={{ background: "none", border: "none", cursor: "pointer", color: "#92400e", padding: "2px 4px", fontSize: 16, lineHeight: 1 }}
-      >
-        ×
-      </button>
-    </div>
-  );
-}
 
 interface Props {
   currentPage: string;
@@ -440,7 +412,6 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
 
         {/* Page content */}
         <main className="main-content page-enter">
-          <DemoBanner />
           {children}
         </main>
       </div>
