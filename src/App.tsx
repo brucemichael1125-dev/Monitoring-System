@@ -29,10 +29,11 @@ const PAGE_ACCESS: Record<string, string[]> = {
 };
 
 export default function App() {
-  const [user,        setUser]        = useState<User | null>(null);
-  const [authId,      setAuthId]      = useState<string | undefined>(undefined);
-  const [page,        setPage]        = useState("dashboard");
-  const [authLoading, setAuthLoading] = useState(true);
+  const [user,           setUser]           = useState<User | null>(null);
+  const [authId,         setAuthId]         = useState<string | undefined>(undefined);
+  const [page,           setPage]           = useState("dashboard");
+  const [authLoading,    setAuthLoading]    = useState(true);
+  const [profileMissing, setProfileMissing] = useState(false);
 
   useEffect(() => {
     // Restore existing session on mount
@@ -51,7 +52,7 @@ export default function App() {
   }, []);
 
   async function loadProfile(uid: string) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("auth_id", uid)
@@ -59,6 +60,13 @@ export default function App() {
     if (data) {
       setUser(data as User);
       setAuthId(uid);
+    } else {
+      // Auth succeeded but no profile row exists — sign out so the user
+      // sees the login page with the error rather than a blank redirect loop
+      if (error?.code === "PGRST116") {
+        await supabase.auth.signOut();
+        setProfileMissing(true);
+      }
     }
     setAuthLoading(false);
   }
@@ -71,6 +79,7 @@ export default function App() {
   }, [page, user]);
 
   async function handleLogin(email: string, password: string): Promise<string | null> {
+    setProfileMissing(false);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return error ? error.message : null;
   }
@@ -102,7 +111,7 @@ export default function App() {
 
   // Unauthenticated: show Login
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} profileMissing={profileMissing} />;
   }
 
   function navigate(target: string) {
