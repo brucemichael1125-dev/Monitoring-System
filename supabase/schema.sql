@@ -48,7 +48,6 @@ create table if not exists expenses (
 create index if not exists idx_expenses_date        on expenses(expense_date desc);
 create index if not exists idx_expenses_category    on expenses(category_id);
 create index if not exists idx_expenses_created_by  on expenses(created_by_id);
-create index if not exists idx_expenses_month_year  on expenses(date_trunc('month', expense_date));
 
 -- ── revenues ──────────────────────────────────────────────────────────
 create table if not exists revenues (
@@ -64,7 +63,6 @@ create table if not exists revenues (
 
 create index if not exists idx_revenues_date       on revenues(revenue_date desc);
 create index if not exists idx_revenues_created_by on revenues(created_by_id);
-create index if not exists idx_revenues_month_year on revenues(date_trunc('month', revenue_date));
 
 -- ── budgets ───────────────────────────────────────────────────────────
 create table if not exists budgets (
