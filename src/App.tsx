@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase";
 import type { User } from "./data/mockData";
 import { AppDataProvider } from "./data/AppDataContext";
@@ -34,6 +34,10 @@ export default function App() {
   const [page,        setPage]        = useState("dashboard");
   const [authLoading, setAuthLoading] = useState(true);
   const [loginError,  setLoginError]  = useState("");
+  // Cancellation token: when two loadProfile calls race (e.g. admin registers a
+  // new user which briefly signs in as them before restoring the admin session),
+  // only the result of the most-recently-started call is applied.
+  const loadSeqRef = useRef(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -50,11 +54,16 @@ export default function App() {
   }, []);
 
   async function loadProfile(uid: string) {
+    const seq = ++loadSeqRef.current;
+
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("auth_id", uid)
       .single();
+
+    // A newer loadProfile call started while we were waiting — discard this result.
+    if (seq !== loadSeqRef.current) return;
 
     if (data) {
       setUser(data as User);

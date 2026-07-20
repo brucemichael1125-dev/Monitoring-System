@@ -78,30 +78,32 @@ export default function Register({ onBack }: Props) {
     if (!validate()) return;
     setLoading(true);
 
-    // Call the server-side API route which uses the Supabase Admin API.
-    // This creates the user without touching the admin's current session.
-    const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch("/api/create-user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.access_token ?? ""}`,
+    // Snapshot the admin session before signUp replaces it
+    const { data: { session: adminSession } } = await supabase.auth.getSession();
+
+    // Create the auth user. The DB trigger auto-creates the profile row from metadata.
+    // email_confirm is disabled in the Supabase dashboard so the user can log in immediately.
+    const { data, error: signUpErr } = await supabase.auth.signUp({
+      email:    form.email,
+      password: form.password,
+      options: {
+        data: {
+          full_name: form.full_name,
+          username:  form.username,
+          role:      form.role,
+          phone:     form.phone,
+        },
       },
-      body: JSON.stringify({
-        email:     form.email,
-        password:  form.password,
-        full_name: form.full_name,
-        username:  form.username,
-        role:      form.role,
-        phone:     form.phone,
-      }),
     });
+
+    // Restore the admin session immediately. App.tsx uses a cancellation token so
+    // the brief sign-in as the new user is discarded in favour of this restoration.
+    if (adminSession) await supabase.auth.setSession(adminSession);
 
     setLoading(false);
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setErrors({ ...errors, email: body.error ?? "Registration failed. Try a different email." });
+    if (signUpErr || !data.user) {
+      setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
       return;
     }
 
