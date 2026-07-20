@@ -9,7 +9,11 @@ export default function Budgets() {
   const catColor = (id: number) => categories.find((c) => c.category_id === id)?.color ?? "#94a3b8";
   const currentYear = new Date().getFullYear();
   const dataYear    = budgets.length > 0 ? budgets[0].year : currentYear;
-  const yearOptions = [dataYear - 1, dataYear, dataYear + 1];
+  // Always include current year and two years ahead so new budgets can be created
+  // regardless of what year existing budgets were saved under.
+  const yearOptions = Array.from(
+    new Set([dataYear, currentYear - 1, currentYear, currentYear + 1, currentYear + 2])
+  ).sort((a, b) => a - b);
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
   const [filterYear, setFilterYear]   = useState(dataYear);
   const [showModal, setShowModal] = useState(false);
