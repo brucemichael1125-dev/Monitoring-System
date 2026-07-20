@@ -79,6 +79,8 @@ export default function App() {
 
   async function handleLogin(email: string, password: string): Promise<string | null> {
     setLoginError("");
+    // Clear any stale session before attempting a fresh login
+    await supabase.auth.signOut();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return error ? error.message : null;
   }
