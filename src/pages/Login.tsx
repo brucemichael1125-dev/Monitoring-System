@@ -17,7 +17,7 @@ export default function Login({ onLogin, profileMissing = false }: Props) {
     setError("");
     setLoading(true);
     const errMsg = await onLogin(email.trim().toLowerCase(), password);
-    if (errMsg) setError("Invalid email or password. Please try again.");
+    if (errMsg) setError(errMsg);
     setLoading(false);
   }
 
