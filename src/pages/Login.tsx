@@ -230,6 +230,9 @@ export default function Login({ onLogin, serverError = "" }: Props) {
             <span style={{ fontSize: 11, color: "#cbd5e1" }}>
               © {new Date().getFullYear()} Agri-Business Cost &amp; Budget Monitoring System · Rwanda
             </span>
+            <div style={{ fontSize: 9, color: "#e2e8f0", marginTop: 4, fontFamily: "monospace" }}>
+              {(import.meta.env.VITE_SUPABASE_URL as string)?.replace("https://", "").slice(0, 24) || "⚠ no url"}
+            </div>
           </div>
         </div>
       </div>
