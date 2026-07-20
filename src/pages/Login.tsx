@@ -2,10 +2,10 @@ import { useState } from "react";
 
 interface Props {
   onLogin: (email: string, password: string) => Promise<string | null>;
-  profileMissing?: boolean;
+  serverError?: string;
 }
 
-export default function Login({ onLogin, profileMissing = false }: Props) {
+export default function Login({ onLogin, serverError = "" }: Props) {
   const [email,    setEmail]   = useState("");
   const [password, setPassword] = useState("");
   const [showPw,   setShowPw]   = useState(false);
@@ -20,6 +20,8 @@ export default function Login({ onLogin, profileMissing = false }: Props) {
     if (errMsg) setError(errMsg);
     setLoading(false);
   }
+
+  const displayError = error || serverError;
 
   return (
     <div style={{
@@ -164,7 +166,7 @@ export default function Login({ onLogin, profileMissing = false }: Props) {
             </div>
 
             {/* Error */}
-            {(error || profileMissing) && (
+            {displayError && (
               <div style={{
                 padding: "10px 14px", borderRadius: 9,
                 background: "#fef2f2", border: "1px solid #fecaca",
@@ -174,9 +176,7 @@ export default function Login({ onLogin, profileMissing = false }: Props) {
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                {profileMissing
-                  ? "Account exists but has no profile row. Run the INSERT INTO profiles … SQL in the Supabase SQL Editor for this account."
-                  : error}
+                {displayError}
               </div>
             )}
 

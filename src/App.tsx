@@ -29,20 +29,18 @@ const PAGE_ACCESS: Record<string, string[]> = {
 };
 
 export default function App() {
-  const [user,           setUser]           = useState<User | null>(null);
-  const [authId,         setAuthId]         = useState<string | undefined>(undefined);
-  const [page,           setPage]           = useState("dashboard");
-  const [authLoading,    setAuthLoading]    = useState(true);
-  const [profileMissing, setProfileMissing] = useState(false);
+  const [user,        setUser]        = useState<User | null>(null);
+  const [authId,      setAuthId]      = useState<string | undefined>(undefined);
+  const [page,        setPage]        = useState("dashboard");
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginError,  setLoginError]  = useState("");
 
   useEffect(() => {
-    // Restore existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) loadProfile(session.user.id);
       else setAuthLoading(false);
     });
 
-    // Listen for auth state changes (login / logout / token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) loadProfile(session.user.id);
       else { setUser(null); setAuthId(undefined); setAuthLoading(false); }
@@ -57,21 +55,22 @@ export default function App() {
       .select("*")
       .eq("auth_id", uid)
       .single();
+
     if (data) {
       setUser(data as User);
       setAuthId(uid);
+      setLoginError("");
     } else {
-      // Auth succeeded but no profile row exists — sign out so the user
-      // sees the login page with the error rather than a blank redirect loop
+      await supabase.auth.signOut();
       if (error?.code === "PGRST116") {
-        await supabase.auth.signOut();
-        setProfileMissing(true);
+        setLoginError("Account has no profile. Contact your administrator.");
+      } else {
+        setLoginError(`Profile error (${error?.code ?? "unknown"}): ${error?.message ?? "Could not load your account."}`);
       }
     }
     setAuthLoading(false);
   }
 
-  // Redirect non-admin away from register page
   useEffect(() => {
     if (user && page === "register" && user.role !== "admin") {
       setPage("dashboard");
@@ -79,7 +78,7 @@ export default function App() {
   }, [page, user]);
 
   async function handleLogin(email: string, password: string): Promise<string | null> {
-    setProfileMissing(false);
+    setLoginError("");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return error ? error.message : null;
   }
@@ -111,7 +110,7 @@ export default function App() {
 
   // Unauthenticated: show Login
   if (!user) {
-    return <Login onLogin={handleLogin} profileMissing={profileMissing} />;
+    return <Login onLogin={handleLogin} serverError={loginError} />;
   }
 
   function navigate(target: string) {
