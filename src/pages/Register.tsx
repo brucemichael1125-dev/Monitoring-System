@@ -78,45 +78,34 @@ export default function Register({ onBack }: Props) {
     if (!validate()) return;
     setLoading(true);
 
-    // Save the admin's session before signUp replaces it
+    // Save admin session — signUp with email confirmation off replaces it
     const { data: { session: adminSession } } = await supabase.auth.getSession();
 
-    // 1. Create Supabase auth user
+    // Create auth user; the DB trigger auto-creates the profile row using metadata
     const { data, error: signUpErr } = await supabase.auth.signUp({
       email:    form.email,
       password: form.password,
+      options: {
+        data: {
+          full_name: form.full_name,
+          username:  form.username,
+          role:      form.role,
+          phone:     form.phone,
+        },
+      },
     });
 
-    if (signUpErr || !data.user) {
-      // Restore admin session even on failure
-      if (adminSession) await supabase.auth.setSession(adminSession);
-      setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
-      setLoading(false);
-      return;
-    }
-
-    // 2. Insert profile row (while still authenticated as the new user — RLS allows insert)
-    const { error: profileErr } = await supabase.from("profiles").insert({
-      auth_id:   data.user.id,
-      full_name: form.full_name,
-      username:  form.username,
-      role:      form.role,
-      email:     form.email,
-      phone:     form.phone,
-    });
-
-    // 3. Restore the admin's session regardless of profile insert outcome
+    // Restore admin session regardless of outcome
     if (adminSession) await supabase.auth.setSession(adminSession);
 
     setLoading(false);
-    if (profileErr) {
-      setErrors({ ...errors, email: "Profile creation failed: " + profileErr.message });
+
+    if (signUpErr || !data.user) {
+      setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
       return;
     }
 
-    // 4. Refresh the users list in context so Users page reflects the new account
     await refreshUsers();
-
     setRegistered({ name: form.full_name, username: form.username, role: form.role });
     setSuccess(true);
   }

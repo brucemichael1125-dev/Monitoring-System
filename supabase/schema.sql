@@ -207,3 +207,59 @@ create policy "bud_select"
 create policy "bud_write"
   on budgets for all
   using (get_my_role() in ('admin', 'manager'));
+
+-- ── Auto-create profile on new auth user ─────────────────────────────
+-- Fires whenever a user is added (Dashboard, API, or Register page).
+-- Reads full_name / username / role / phone from user metadata if
+-- provided; otherwise derives sensible defaults from the email address.
+create or replace function public.handle_new_auth_user()
+returns trigger language plpgsql security definer as $$
+declare
+  _full_name text;
+  _username  text;
+  _role      text;
+  _phone     text;
+  _base      text;
+  _counter   int := 0;
+begin
+  _full_name := coalesce(
+    nullif(trim(new.raw_user_meta_data->>'full_name'), ''),
+    split_part(new.email, '@', 1)
+  );
+  _role := coalesce(
+    nullif(trim(new.raw_user_meta_data->>'role'), ''),
+    'staff'
+  );
+  _phone := coalesce(
+    nullif(trim(new.raw_user_meta_data->>'phone'), ''),
+    ''
+  );
+
+  if (new.raw_user_meta_data ? 'username')
+     and nullif(trim(new.raw_user_meta_data->>'username'), '') is not null
+  then
+    -- Register page supplied a validated username — use it directly
+    _username := lower(trim(new.raw_user_meta_data->>'username'));
+  else
+    -- Derive from email prefix and ensure uniqueness
+    _base := lower(regexp_replace(split_part(new.email, '@', 1), '[^a-zA-Z0-9_-]', '', 'g'));
+    if length(_base) < 3 then _base := _base || '000'; end if;
+    _username := _base;
+    while exists (select 1 from public.profiles where username = _username) loop
+      _counter  := _counter + 1;
+      _username := _base || _counter::text;
+    end loop;
+  end if;
+
+  insert into public.profiles (auth_id, full_name, username, role, email, phone)
+  values (new.id::text, _full_name, _username, _role, new.email, _phone)
+  on conflict (auth_id) do nothing;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_auth_user();
