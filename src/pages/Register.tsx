@@ -78,30 +78,30 @@ export default function Register({ onBack }: Props) {
     if (!validate()) return;
     setLoading(true);
 
-    // Save admin session — signUp with email confirmation off replaces it
-    const { data: { session: adminSession } } = await supabase.auth.getSession();
-
-    // Create auth user; the DB trigger auto-creates the profile row using metadata
-    const { data, error: signUpErr } = await supabase.auth.signUp({
-      email:    form.email,
-      password: form.password,
-      options: {
-        data: {
-          full_name: form.full_name,
-          username:  form.username,
-          role:      form.role,
-          phone:     form.phone,
-        },
+    // Call the server-side API route which uses the Supabase Admin API.
+    // This creates the user without touching the admin's current session.
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch("/api/create-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
       },
+      body: JSON.stringify({
+        email:     form.email,
+        password:  form.password,
+        full_name: form.full_name,
+        username:  form.username,
+        role:      form.role,
+        phone:     form.phone,
+      }),
     });
-
-    // Restore admin session regardless of outcome
-    if (adminSession) await supabase.auth.setSession(adminSession);
 
     setLoading(false);
 
-    if (signUpErr || !data.user) {
-      setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setErrors({ ...errors, email: body.error ?? "Registration failed. Try a different email." });
       return;
     }
 
