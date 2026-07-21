@@ -69,13 +69,18 @@ export default function App() {
       setUser(data as User);
       setAuthId(uid);
       setLoginError("");
+    } else if (error?.code === "PGRST116") {
+      // No profile row found. This can happen legitimately during admin user
+      // registration (the new user is briefly signed in while their profile is
+      // being created). Do NOT signOut here — that would destroy the admin's
+      // session. Just clear the user state; the admin's loadProfile call (seq+1)
+      // will restore them via the cancellation-token check above.
+      setUser(null);
+      setAuthId(undefined);
+      setLoginError("Account has no profile. Contact your administrator.");
     } else {
       await supabase.auth.signOut();
-      if (error?.code === "PGRST116") {
-        setLoginError("Account has no profile. Contact your administrator.");
-      } else {
-        setLoginError(`Profile error (${error?.code ?? "unknown"}): ${error?.message ?? "Could not load your account."}`);
-      }
+      setLoginError(`Profile error (${error?.code ?? "unknown"}): ${error?.message ?? "Could not load your account."}`);
     }
     setAuthLoading(false);
   }

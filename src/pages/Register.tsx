@@ -78,51 +78,32 @@ export default function Register({ onBack }: Props) {
     if (!validate()) return;
     setLoading(true);
 
-    // Snapshot the admin session before signUp replaces it
-    const { data: { session: adminSession } } = await supabase.auth.getSession();
+    // Use the server-side API route so the admin's browser session is never
+    // touched. The route calls the Supabase Admin API with the service role key
+    // and also upserts the profile row directly, bypassing the unreliable trigger.
+    const { data: { session } } = await supabase.auth.getSession();
 
-    // Create the auth user. The DB trigger auto-creates the profile row from metadata.
-    // email_confirm is disabled in the Supabase dashboard so the user can log in immediately.
-    const { data, error: signUpErr } = await supabase.auth.signUp({
-      email:    form.email,
-      password: form.password,
-      options: {
-        data: {
-          full_name: form.full_name,
-          username:  form.username,
-          role:      form.role,
-          phone:     form.phone,
-        },
+    const res = await fetch("/api/create-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
       },
-    });
-
-    // Restore the admin session immediately so subsequent DB calls use admin credentials.
-    if (adminSession) await supabase.auth.setSession(adminSession);
-
-    setLoading(false);
-
-    if (signUpErr || !data.user) {
-      setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
-      return;
-    }
-
-    // Supabase swallows DB trigger failures — the auth user may have been created but
-    // the profile row may not exist yet. Upsert guarantees the profile is present.
-    // If the trigger already ran successfully this is a harmless update.
-    const { error: profileErr } = await supabase.from("profiles").upsert(
-      {
-        auth_id:   data.user.id,
+      body: JSON.stringify({
+        email:     form.email.trim().toLowerCase(),
+        password:  form.password,
         full_name: form.full_name.trim(),
         username:  form.username.toLowerCase().trim(),
         role:      form.role,
-        email:     form.email.trim().toLowerCase(),
         phone:     form.phone.trim(),
-      },
-      { onConflict: "auth_id" }
-    );
+      }),
+    });
 
-    if (profileErr) {
-      setErrors({ ...errors, email: `Account created but profile setup failed: ${profileErr.message}` });
+    setLoading(false);
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setErrors({ ...errors, email: body.error ?? "Registration failed. Try again." });
       return;
     }
 
