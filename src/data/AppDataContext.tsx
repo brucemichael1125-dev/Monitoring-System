@@ -9,6 +9,7 @@ interface AppData {
   budgets:    Budget[];
   categories: Category[];
   loading:    boolean;
+  loadError:  string | null;
 
   refreshUsers(): Promise<void>;
   addUser(u: Omit<User, "user_id" | "created_at">): void;
@@ -45,6 +46,7 @@ export function AppDataProvider({ children, authId }: Props) {
   const [budgets,    setBudgets]    = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading,    setLoading]    = useState(false);
+  const [loadError,  setLoadError]  = useState<string | null>(null);
 
   useEffect(() => {
     if (!authId) {
@@ -52,6 +54,7 @@ export function AppDataProvider({ children, authId }: Props) {
       return;
     }
     setLoading(true);
+    setLoadError(null);
     Promise.all([
       supabase.from("profiles").select("*").order("user_id"),
       supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
@@ -59,6 +62,11 @@ export function AppDataProvider({ children, authId }: Props) {
       supabase.from("budgets").select("*"),
       supabase.from("categories").select("*").order("category_id"),
     ]).then(([u, e, r, b, c]) => {
+      const firstError = u.error ?? e.error ?? r.error ?? b.error ?? c.error;
+      if (firstError) {
+        setLoadError(`Failed to load data: ${firstError.message}`);
+        return;
+      }
       if (u.data) setUsers(u.data as User[]);
       if (e.data) setExpenses(e.data as Expense[]);
       if (r.data) setRevenues(r.data as Revenue[]);
@@ -258,12 +266,12 @@ export function AppDataProvider({ children, authId }: Props) {
   }, []);
 
   const value = useMemo<AppData>(() => ({
-    users, expenses, revenues, budgets, categories, loading,
+    users, expenses, revenues, budgets, categories, loading, loadError,
     refreshUsers, addUser, updateUser, deleteUser,
     addExpense, updateExpense, deleteExpense,
     addRevenue, updateRevenue, deleteRevenue,
     addBudget, updateBudget, deleteBudget,
-  }), [users, expenses, revenues, budgets, categories, loading,
+  }), [users, expenses, revenues, budgets, categories, loading, loadError,
     refreshUsers, addUser, updateUser, deleteUser,
     addExpense, updateExpense, deleteExpense,
     addRevenue, updateRevenue, deleteRevenue,

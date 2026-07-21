@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { User } from "../data/mockData";
+import { useAppData } from "../data/AppDataContext";
 
 // SVG icon system
 function NavIcon({ page }: { page: string }) {
@@ -77,6 +78,7 @@ interface Props {
 }
 
 export default function Layout({ currentPage, onNavigate, onLogout, user, children }: Props) {
+  const { loadError } = useAppData();
   const [isMobile, setIsMobile]     = useState(() => window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
 
@@ -409,6 +411,20 @@ export default function Layout({ currentPage, onNavigate, onLogout, user, childr
             </button>
           </div>
         </header>
+
+        {/* Data load error banner */}
+        {loadError && (
+          <div style={{
+            background: "#fef2f2", borderBottom: "1px solid #fecaca",
+            padding: "10px 20px", display: "flex", alignItems: "center", gap: 10,
+            fontSize: 13, color: "#b91c1c", flexShrink: 0,
+          }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span><strong>Data failed to load:</strong> {loadError} — try refreshing the page.</span>
+          </div>
+        )}
 
         {/* Page content */}
         <main className="main-content page-enter">
