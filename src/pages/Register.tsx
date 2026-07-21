@@ -96,14 +96,33 @@ export default function Register({ onBack }: Props) {
       },
     });
 
-    // Restore the admin session immediately. App.tsx uses a cancellation token so
-    // the brief sign-in as the new user is discarded in favour of this restoration.
+    // Restore the admin session immediately so subsequent DB calls use admin credentials.
     if (adminSession) await supabase.auth.setSession(adminSession);
 
     setLoading(false);
 
     if (signUpErr || !data.user) {
       setErrors({ ...errors, email: signUpErr?.message ?? "Sign-up failed. Try a different email." });
+      return;
+    }
+
+    // Supabase swallows DB trigger failures — the auth user may have been created but
+    // the profile row may not exist yet. Upsert guarantees the profile is present.
+    // If the trigger already ran successfully this is a harmless update.
+    const { error: profileErr } = await supabase.from("profiles").upsert(
+      {
+        auth_id:   data.user.id,
+        full_name: form.full_name.trim(),
+        username:  form.username.toLowerCase().trim(),
+        role:      form.role,
+        email:     form.email.trim().toLowerCase(),
+        phone:     form.phone.trim(),
+      },
+      { onConflict: "auth_id" }
+    );
+
+    if (profileErr) {
+      setErrors({ ...errors, email: `Account created but profile setup failed: ${profileErr.message}` });
       return;
     }
 
