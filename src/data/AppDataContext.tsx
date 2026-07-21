@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { supabase } from "../lib/supabase";
 import type { User, Expense, Revenue, Budget, Category } from "./mockData";
 
@@ -257,13 +257,18 @@ export function AppDataProvider({ children, authId }: Props) {
     });
   }, []);
 
-  const value: AppData = {
+  const value = useMemo<AppData>(() => ({
     users, expenses, revenues, budgets, categories, loading,
     refreshUsers, addUser, updateUser, deleteUser,
     addExpense, updateExpense, deleteExpense,
     addRevenue, updateRevenue, deleteRevenue,
     addBudget, updateBudget, deleteBudget,
-  };
+  }), [users, expenses, revenues, budgets, categories, loading,
+    refreshUsers, addUser, updateUser, deleteUser,
+    addExpense, updateExpense, deleteExpense,
+    addRevenue, updateRevenue, deleteRevenue,
+    addBudget, updateBudget, deleteBudget,
+  ]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
 }

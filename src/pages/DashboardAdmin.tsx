@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAppData } from "../data/AppDataContext";
 import { formatRWF } from "../data/mockData";
 import type { User, Role } from "../data/mockData";
@@ -15,26 +15,32 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
   const { users, expenses, revenues, budgets, categories } = useAppData();
   const [activeTab, setActiveTab] = useState<"overview" | "users" | "activity">("overview");
 
-  const activityFeed = [
+  const activityFeed = useMemo(() => [
     ...expenses.map((e) => ({ type: "expense" as const, date: e.expense_date, label: e.description, amount: e.amount, by: e.created_by })),
     ...revenues.map((r) => ({ type: "revenue" as const, date: r.revenue_date, label: r.source, amount: r.amount, by: r.created_by })),
-  ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12);
+  ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12), [expenses, revenues]);
 
-  const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
-  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
-  const netProfit     = totalRevenue - totalExpenses;
-  const adminCount    = users.filter((u) => u.role === "admin").length;
-  const managerCount  = users.filter((u) => u.role === "manager").length;
-  const staffCount    = users.filter((u) => u.role === "staff").length;
+  const { totalRevenue, totalExpenses, netProfit, adminCount, managerCount, staffCount } = useMemo(() => {
+    const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
+    const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+    return {
+      totalRevenue,
+      totalExpenses,
+      netProfit: totalRevenue - totalExpenses,
+      adminCount:   users.filter((u) => u.role === "admin").length,
+      managerCount: users.filter((u) => u.role === "manager").length,
+      staffCount:   users.filter((u) => u.role === "staff").length,
+    };
+  }, [revenues, expenses, users]);
 
-  const kpiStrip = [
+  const kpiStrip = useMemo(() => [
     { label: "Total Users",  value: users.length,       color: "#0e3a1d", bg: "#f0faf3", border: "#b3e6c4", icon: "👥" },
     { label: "Admins",       value: adminCount,          color: "#b45309", bg: "#fef3c7", border: "#fde68a", icon: "🔑" },
     { label: "Managers",     value: managerCount,        color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe", icon: "📊" },
     { label: "Staff",        value: staffCount,          color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", icon: "👤" },
     { label: "Categories",   value: categories.length,   color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe", icon: "🏷️" },
     { label: "Budget Lines", value: budgets.length,      color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd", icon: "📋" },
-  ];
+  ], [users.length, adminCount, managerCount, staffCount, categories.length, budgets.length]);
 
   const tabs = [
     { key: "overview" as const, label: "System Overview" },
@@ -121,8 +127,9 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
               </div>
               <div style={{ padding: "4px 0" }}>
                 {categories.map((cat) => {
-                  const spend = expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0);
-                  const count = expenses.filter((e) => e.category_id === cat.category_id).length;
+                  const catExpenses = expenses.filter((e) => e.category_id === cat.category_id);
+                  const spend = catExpenses.reduce((s, e) => s + e.amount, 0);
+                  const count = catExpenses.length;
                   const pct   = totalExpenses > 0 ? (spend / totalExpenses) * 100 : 0;
                   return (
                     <div
@@ -278,7 +285,7 @@ export default function DashboardAdmin({ user, onNavigate }: Props) {
             <div>
               {activityFeed.map((act, i) => (
                 <div
-                  key={i}
+                  key={`${act.type}-${act.date}-${i}`}
                   style={{ display: "flex", gap: 14, padding: "12px 20px", alignItems: "center", borderBottom: "1px solid #f8fafc", transition: "background 0.1s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, Cell,
@@ -25,27 +26,31 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 
 export default function DashboardManager({ user, onNavigate }: Props) {
   const { expenses, revenues, budgets, categories } = useAppData();
-  const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
-  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
-  const profit  = totalRevenue - totalExpenses;
-  const margin  = totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : "0";
 
-  const monthly = getMonthlyData(revenues, expenses);
+  const { totalRevenue, totalExpenses, profit, margin } = useMemo(() => {
+    const totalRevenue  = revenues.reduce((s, r) => s + r.amount, 0);
+    const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+    const profit        = totalRevenue - totalExpenses;
+    return { totalRevenue, totalExpenses, profit, margin: totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : "0" };
+  }, [revenues, expenses]);
 
-  const budgetComparison = categories.map((cat) => {
-    const budgeted = budgets.filter((b) => b.category_id === cat.category_id).reduce((s, b) => s + b.budget_amount, 0);
-    const actual   = expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0);
-    return { name: cat.category_name.split(" ")[0], budgeted, actual, over: actual > budgeted && budgeted > 0 };
-  }).filter((c) => c.budgeted > 0 || c.actual > 0);
+  const monthly = useMemo(() => getMonthlyData(revenues, expenses), [revenues, expenses]);
 
-  const overBudget = budgetComparison.filter((c) => c.over);
+  const { budgetComparison, overBudget } = useMemo(() => {
+    const budgetComparison = categories.map((cat) => {
+      const budgeted = budgets.filter((b) => b.category_id === cat.category_id).reduce((s, b) => s + b.budget_amount, 0);
+      const actual   = expenses.filter((e) => e.category_id === cat.category_id).reduce((s, e) => s + e.amount, 0);
+      return { name: cat.category_name.split(" ")[0], budgeted, actual, over: actual > budgeted && budgeted > 0 };
+    }).filter((c) => c.budgeted > 0 || c.actual > 0);
+    return { budgetComparison, overBudget: budgetComparison.filter((c) => c.over) };
+  }, [categories, budgets, expenses]);
 
-  const kpiCards = [
+  const kpiCards = useMemo(() => [
     { label: "Total Revenue",  value: formatRWF(totalRevenue),  sub: `${revenues.length} transactions`, accent: "#2d8a4e", bg: "#f0faf3", border: "#b3e6c4" },
     { label: "Total Expenses", value: formatRWF(totalExpenses), sub: `${expenses.length} cost records`,  accent: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
     { label: "Net Profit",     value: formatRWF(profit),        sub: profit > 0 ? "Profitable" : "Operating loss", accent: profit > 0 ? "#d97706" : "#ef4444", bg: profit > 0 ? "#fffbeb" : "#fef2f2", border: profit > 0 ? "#fde68a" : "#fecaca" },
     { label: "Profit Margin",  value: `${margin}%`,             sub: "Based on total revenue",            accent: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
-  ];
+  ], [totalRevenue, totalExpenses, profit, margin, revenues.length, expenses.length]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
@@ -251,7 +256,7 @@ function RecentTable({ title, accent, items, onViewAll }: {
       </div>
       {items.map((item, i) => (
         <div
-          key={i}
+          key={`${item.sub}-${i}`}
           style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px", borderBottom: "1px solid #f8fafc", transition: "background 0.1s" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
 import type { User } from "./data/mockData";
 import { AppDataProvider } from "./data/AppDataContext";
@@ -8,18 +8,18 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Layout from "./components/Layout";
 
-// Role-specific dashboards
-import DashboardAdmin   from "./pages/DashboardAdmin";
-import DashboardManager from "./pages/DashboardManager";
-import DashboardStaff   from "./pages/DashboardStaff";
+// Role-specific dashboards — lazy loaded
+const DashboardAdmin   = lazy(() => import("./pages/DashboardAdmin"));
+const DashboardManager = lazy(() => import("./pages/DashboardManager"));
+const DashboardStaff   = lazy(() => import("./pages/DashboardStaff"));
 
-// Shared pages
-import Expenses from "./pages/Expenses";
-import RevenuePage from "./pages/Revenue";
-import Budgets from "./pages/Budgets";
-import Reports from "./pages/Reports";
-import Users from "./pages/Users";
-import Profile from "./pages/Profile";
+// Shared pages — lazy loaded
+const Expenses   = lazy(() => import("./pages/Expenses"));
+const RevenuePage = lazy(() => import("./pages/Revenue"));
+const Budgets    = lazy(() => import("./pages/Budgets"));
+const Reports    = lazy(() => import("./pages/Reports"));
+const Users      = lazy(() => import("./pages/Users"));
+const Profile    = lazy(() => import("./pages/Profile"));
 
 // Page access rules per role
 const PAGE_ACCESS: Record<string, string[]> = {
@@ -184,7 +184,16 @@ export default function App() {
             user={user}
           >
             <ErrorBoundary key={page}>
-              {renderPage()}
+              <Suspense fallback={
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "40vh", color: "#94a3b8", fontSize: 13, gap: 8, fontFamily: "var(--font-sans)" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d8a4e" strokeWidth="2.5" strokeLinecap="round" style={{ animation: "spin 0.8s linear infinite" }}>
+                    <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+                  </svg>
+                  Loading…
+                </div>
+              }>
+                {renderPage()}
+              </Suspense>
             </ErrorBoundary>
           </Layout>
         )

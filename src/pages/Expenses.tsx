@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAppData } from "../data/AppDataContext";
 import { formatRWF } from "../data/mockData";
 import type { Expense, User } from "../data/mockData";
@@ -9,8 +9,6 @@ interface Props { user: User; }
 
 export default function Expenses({ user }: Props) {
   const { expenses, addExpense, updateExpense, deleteExpense, categories } = useAppData();
-  const catName  = (id: number) => categories.find((c) => c.category_id === id)?.category_name ?? "Unknown";
-  const catColor = (id: number) => categories.find((c) => c.category_id === id)?.color ?? "#94a3b8";
   const [search, setSearch]       = useState("");
   const [filterCat, setFilterCat] = useState(0);
   const [sortKey, setSortKey]     = useState<SortKey>("expense_date");
@@ -20,18 +18,28 @@ export default function Expenses({ user }: Props) {
   const [form, setForm]           = useState({ category_id: 1, amount: "", description: "", expense_date: "" });
   const [formError, setFormError] = useState("");
 
-  const filtered = expenses
-    .filter((e) =>
-      (!filterCat || e.category_id === filterCat) &&
-      (!search || e.description.toLowerCase().includes(search.toLowerCase()))
-    )
-    .sort((a, b) => {
-      if (sortKey === "amount")       return b.amount - a.amount;
-      if (sortKey === "expense_date") return b.expense_date.localeCompare(a.expense_date);
-      return a.category_id - b.category_id;
-    });
+  const catMap = useMemo(() =>
+    new Map(categories.map((c) => [c.category_id, c])),
+    [categories]
+  );
+  const catName  = (id: number) => catMap.get(id)?.category_name ?? "Unknown";
+  const catColor = (id: number) => catMap.get(id)?.color ?? "#94a3b8";
 
-  const total = filtered.reduce((s, e) => s + e.amount, 0);
+  const filtered = useMemo(() =>
+    expenses
+      .filter((e) =>
+        (!filterCat || e.category_id === filterCat) &&
+        (!search || e.description.toLowerCase().includes(search.toLowerCase()))
+      )
+      .sort((a, b) => {
+        if (sortKey === "amount")       return b.amount - a.amount;
+        if (sortKey === "expense_date") return b.expense_date.localeCompare(a.expense_date);
+        return a.category_id - b.category_id;
+      }),
+    [expenses, filterCat, search, sortKey]
+  );
+
+  const total = useMemo(() => filtered.reduce((s, e) => s + e.amount, 0), [filtered]);
 
   function openAdd() {
     setEditing(null);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAppData } from "../data/AppDataContext";
 import { formatRWF } from "../data/mockData";
 import type { User } from "../data/mockData";
@@ -7,27 +7,34 @@ interface Props { user: User; onNavigate: (page: string) => void; }
 
 export default function DashboardStaff({ user, onNavigate }: Props) {
   const { expenses, revenues, categories, addExpense, addRevenue } = useAppData();
-  const myExpenses = expenses.filter((e) =>
-    e.created_by_id ? e.created_by_id === user.auth_id : e.created_by === user.full_name
-  );
-  const myRevenues = revenues.filter((r) =>
-    r.created_by_id ? r.created_by_id === user.auth_id : r.created_by === user.full_name
-  );
 
-  const now = new Date();
-  const latestMonth = now.getMonth() + 1;
-  const latestYear  = now.getFullYear();
-  const thisMonthExp = myExpenses.filter((e) => {
-    const [ey, em] = e.expense_date.split("-").map(Number);
-    return em === latestMonth && ey === latestYear;
-  });
-  const thisMonthRev = myRevenues.filter((r) => {
-    const [ry, rm] = r.revenue_date.split("-").map(Number);
-    return rm === latestMonth && ry === latestYear;
-  });
-
-  const myTotalExpenses = myExpenses.reduce((s, e) => s + e.amount, 0);
-  const myTotalRevenues = myRevenues.reduce((s, r) => s + r.amount, 0);
+  const { myExpenses, myRevenues, thisMonthExp, thisMonthRev, myTotalExpenses, myTotalRevenues } = useMemo(() => {
+    const myExpenses = expenses.filter((e) =>
+      e.created_by_id ? e.created_by_id === user.auth_id : e.created_by === user.full_name
+    );
+    const myRevenues = revenues.filter((r) =>
+      r.created_by_id ? r.created_by_id === user.auth_id : r.created_by === user.full_name
+    );
+    const now         = new Date();
+    const latestMonth = now.getMonth() + 1;
+    const latestYear  = now.getFullYear();
+    const thisMonthExp = myExpenses.filter((e) => {
+      const [ey, em] = e.expense_date.split("-").map(Number);
+      return em === latestMonth && ey === latestYear;
+    });
+    const thisMonthRev = myRevenues.filter((r) => {
+      const [ry, rm] = r.revenue_date.split("-").map(Number);
+      return rm === latestMonth && ry === latestYear;
+    });
+    return {
+      myExpenses,
+      myRevenues,
+      thisMonthExp,
+      thisMonthRev,
+      myTotalExpenses: myExpenses.reduce((s, e) => s + e.amount, 0),
+      myTotalRevenues: myRevenues.reduce((s, r) => s + r.amount, 0),
+    };
+  }, [expenses, revenues, user.auth_id, user.full_name]);
 
   const [quickTab, setQuickTab]   = useState<"expense" | "revenue">("expense");
   const [quickForm, setQuickForm] = useState({ category_id: 1, source: "", amount: "", description: "", date: new Date().toISOString().slice(0, 10) });
@@ -45,12 +52,12 @@ export default function DashboardStaff({ user, onNavigate }: Props) {
     setQuickForm({ category_id: 1, source: "", amount: "", description: "", date: new Date().toISOString().slice(0, 10) });
   }
 
-  const statCards = [
+  const statCards = useMemo(() => [
     { label: "My Expenses (All)",   value: formatRWF(myTotalExpenses),                                   sub: `${myExpenses.length} records`,    accent: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
     { label: "My Revenue (All)",    value: formatRWF(myTotalRevenues),                                   sub: `${myRevenues.length} records`,    accent: "#2d8a4e", bg: "#f0faf3", border: "#b3e6c4" },
     { label: "This Month Expenses", value: formatRWF(thisMonthExp.reduce((s, e) => s + e.amount, 0)),    sub: `${thisMonthExp.length} records`,  accent: "#d97706", bg: "#fffbeb", border: "#fde68a" },
     { label: "This Month Revenue",  value: formatRWF(thisMonthRev.reduce((s, r) => s + r.amount, 0)),    sub: `${thisMonthRev.length} records`,  accent: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
-  ];
+  ], [myTotalExpenses, myTotalRevenues, myExpenses.length, myRevenues.length, thisMonthExp, thisMonthRev]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>

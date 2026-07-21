@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAppData } from "../data/AppDataContext";
 import { formatRWF } from "../data/mockData";
 import type { Revenue, User } from "../data/mockData";
@@ -14,11 +14,14 @@ export default function RevenuePage({ user }: Props) {
   const [form, setForm]         = useState({ source: "", amount: "", description: "", revenue_date: "" });
   const [formError, setFormError] = useState("");
 
-  const filtered = revenues
-    .filter((r) => !search || r.source.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => b.revenue_date.localeCompare(a.revenue_date));
+  const filtered = useMemo(() =>
+    revenues
+      .filter((r) => !search || r.source.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => b.revenue_date.localeCompare(a.revenue_date)),
+    [revenues, search]
+  );
 
-  const total = filtered.reduce((s, r) => s + r.amount, 0);
+  const total = useMemo(() => filtered.reduce((s, r) => s + r.amount, 0), [filtered]);
 
   function openAdd() {
     setEditing(null);
@@ -52,13 +55,14 @@ export default function RevenuePage({ user }: Props) {
     setDeleteId(null);
   }
 
-  // Source breakdown for summary cards
-  const sources = revenues.reduce<Record<string, number>>((acc, r) => {
-    const key = r.source.split(" — ")[0].trim();
-    acc[key] = (acc[key] ?? 0) + r.amount;
-    return acc;
-  }, {});
-  const topSources = Object.entries(sources).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const topSources = useMemo(() => {
+    const sources = revenues.reduce<Record<string, number>>((acc, r) => {
+      const key = r.source.split(" — ")[0].trim();
+      acc[key] = (acc[key] ?? 0) + r.amount;
+      return acc;
+    }, {});
+    return Object.entries(sources).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  }, [revenues]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
