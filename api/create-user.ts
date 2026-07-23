@@ -1,5 +1,5 @@
 // Vercel Edge Function — creates a Supabase auth user via the Admin API.
-// Requires SUPABASE_SERVICE_ROLE_KEY in Vercel environment variables.
+// Requires SUPABASE_SERVICE_ROLE_KEY in Vercel environment variables (Production + Preview).
 // The service role key never reaches the browser; the admin's session is never touched.
 export const config = { runtime: "edge" };
 
