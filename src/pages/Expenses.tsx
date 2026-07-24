@@ -5,18 +5,33 @@ import type { Expense, User } from "../data/mockData";
 
 type SortKey = "expense_date" | "amount" | "category_id";
 
+const COLOR_SWATCHES = [
+  "#2d8a4e", "#f59e0b", "#3b82f6", "#8b5cf6",
+  "#ef4444", "#06b6d4", "#f97316", "#6b7280",
+  "#ec4899", "#10b981", "#dc2626", "#0284c7",
+];
+
 interface Props { user: User; }
 
 export default function Expenses({ user }: Props) {
-  const { expenses, addExpense, updateExpense, deleteExpense, categories } = useAppData();
+  const { expenses, addExpense, updateExpense, deleteExpense, categories, addCategory } = useAppData();
   const [search, setSearch]       = useState("");
   const [filterCat, setFilterCat] = useState(0);
   const [sortKey, setSortKey]     = useState<SortKey>("expense_date");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing]     = useState<Expense | null>(null);
   const [deleteId, setDeleteId]   = useState<number | null>(null);
-  const [form, setForm]           = useState({ category_id: 1, amount: "", description: "", expense_date: "" });
+  const [form, setForm]           = useState({ category_id: 0, amount: "", description: "", expense_date: "" });
   const [formError, setFormError] = useState("");
+
+  // New-category inline form
+  const [showNewCat, setShowNewCat]   = useState(false);
+  const [newCatName, setNewCatName]   = useState("");
+  const [newCatColor, setNewCatColor] = useState(COLOR_SWATCHES[0]);
+  const [newCatError, setNewCatError] = useState("");
+  const [creatingCat, setCreatingCat] = useState(false);
+
+  const canManageCats = user.role !== "staff";
 
   const catMap = useMemo(() =>
     new Map(categories.map((c) => [c.category_id, c])),
@@ -44,13 +59,20 @@ export default function Expenses({ user }: Props) {
   function openAdd() {
     setEditing(null);
     setFormError("");
-    setForm({ category_id: 1, amount: "", description: "", expense_date: new Date().toISOString().slice(0, 10) });
+    setShowNewCat(false);
+    setNewCatName("");
+    setNewCatError("");
+    const defaultCat = categories[0]?.category_id ?? 0;
+    setForm({ category_id: defaultCat, amount: "", description: "", expense_date: new Date().toISOString().slice(0, 10) });
     setShowModal(true);
   }
 
   function openEdit(exp: Expense) {
     setEditing(exp);
     setFormError("");
+    setShowNewCat(false);
+    setNewCatName("");
+    setNewCatError("");
     setForm({ category_id: exp.category_id, amount: String(exp.amount), description: exp.description, expense_date: exp.expense_date });
     setShowModal(true);
   }
@@ -59,6 +81,7 @@ export default function Expenses({ user }: Props) {
     if (!form.description.trim()) { setFormError("Description is required."); return; }
     if (!form.amount || Number(form.amount) <= 0) { setFormError("Enter a valid amount."); return; }
     if (!form.expense_date) { setFormError("Date is required."); return; }
+    if (!form.category_id) { setFormError("Select a category."); return; }
     setFormError("");
     if (editing) {
       updateExpense({ ...editing, ...form, amount: Number(form.amount) });
@@ -66,6 +89,24 @@ export default function Expenses({ user }: Props) {
       addExpense({ ...form, amount: Number(form.amount), created_by: user.full_name });
     }
     setShowModal(false);
+  }
+
+  async function handleCreateCategory() {
+    if (!newCatName.trim()) { setNewCatError("Category name is required."); return; }
+    if (categories.some((c) => c.category_name.toLowerCase() === newCatName.trim().toLowerCase())) {
+      setNewCatError("A category with this name already exists."); return;
+    }
+    setCreatingCat(true);
+    setNewCatError("");
+    const created = await addCategory(newCatName.trim(), newCatColor);
+    setCreatingCat(false);
+    if (!created) {
+      setNewCatError("Failed to create category. Check your permissions.");
+      return;
+    }
+    setForm((prev) => ({ ...prev, category_id: created.category_id }));
+    setShowNewCat(false);
+    setNewCatName("");
   }
 
   function handleDelete(id: number) {
@@ -97,7 +138,6 @@ export default function Expenses({ user }: Props) {
 
       {/* Filters */}
       <div style={{ background: "#fff", borderRadius: 12, padding: "14px 18px", border: "1px solid #e2e8f0", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-        {/* Search */}
         <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -211,6 +251,85 @@ export default function Expenses({ user }: Props) {
               {categories.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
             </select>
           </FormField>
+
+          {/* Inline new-category form — admin & manager only */}
+          {canManageCats && (
+            <div>
+              {!showNewCat ? (
+                <button
+                  onClick={() => setShowNewCat(true)}
+                  style={{ background: "none", border: "none", color: "#2d8a4e", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "0 2px", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 5 }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add new category
+                </button>
+              ) : (
+                <div style={{ background: "#f0faf3", border: "1px solid #b3e6c4", borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#2d8a4e", letterSpacing: "0.06em" }}>NEW CATEGORY</div>
+                  <input
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    placeholder="Category name…"
+                    style={inputStyle}
+                    autoFocus
+                  />
+                  {/* Color swatches */}
+                  <div>
+                    <div style={{ fontSize: 10.5, fontWeight: 600, color: "#64748b", marginBottom: 6 }}>COLOR</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {COLOR_SWATCHES.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setNewCatColor(c)}
+                          title={c}
+                          style={{
+                            width: 24, height: 24, borderRadius: 6, background: c, cursor: "pointer",
+                            border: newCatColor === c ? "2.5px solid #1e293b" : "2.5px solid transparent",
+                            outline: newCatColor === c ? "1.5px solid #fff" : "none",
+                            outlineOffset: -3, transition: "border 0.1s",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  {/* Preview */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "#94a3b8" }}>Preview:</span>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "3px 10px", borderRadius: 20,
+                      background: newCatColor + "18", fontSize: 11, fontWeight: 600, color: newCatColor,
+                      border: `1px solid ${newCatColor}30`,
+                    }}>
+                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: newCatColor, flexShrink: 0, display: "inline-block" }} />
+                      {newCatName || "Category name"}
+                    </span>
+                  </div>
+                  {newCatError && (
+                    <div style={{ padding: "7px 10px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, fontSize: 12, color: "#b91c1c" }}>
+                      {newCatError}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={handleCreateCategory}
+                      disabled={creatingCat}
+                      style={{ ...primaryBtn, padding: "7px 14px", fontSize: 12, boxShadow: "none", opacity: creatingCat ? 0.7 : 1 }}
+                    >
+                      {creatingCat ? "Creating…" : "Create & Select"}
+                    </button>
+                    <button
+                      onClick={() => { setShowNewCat(false); setNewCatName(""); setNewCatError(""); }}
+                      style={{ ...ghostBtn, padding: "7px 14px", fontSize: 12 }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <FormField label="Description">
             <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe the expense…" style={inputStyle} />
           </FormField>
@@ -266,7 +385,7 @@ function SumCard({ label, value, color, bg, border }: { label: string; value: st
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-      <div style={{ background: "#fff", borderRadius: 16, padding: 28, width: "min(440px, calc(100vw - 32px))", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", border: "1px solid #e2e8f0" }}>
+      <div style={{ background: "#fff", borderRadius: 16, padding: 28, width: "min(480px, calc(100vw - 32px))", maxHeight: "calc(100vh - 40px)", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", border: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "#1e293b", margin: 0 }}>{title}</h3>
           <button onClick={onClose} style={{ background: "#f1f5f9", border: "none", width: 28, height: 28, borderRadius: 7, cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>

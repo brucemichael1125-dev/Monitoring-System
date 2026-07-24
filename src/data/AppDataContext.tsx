@@ -16,6 +16,8 @@ interface AppData {
   updateUser(u: User): void;
   deleteUser(id: number): void;
 
+  addCategory(name: string, color: string): Promise<Category | null>;
+
   addExpense(e: Omit<Expense, "expense_id">): void;
   updateExpense(e: Expense): void;
   deleteExpense(id: number): void;
@@ -48,6 +50,7 @@ export function AppDataProvider({ children, authId }: Props) {
   const [loading,    setLoading]    = useState(false);
   const [loadError,  setLoadError]  = useState<string | null>(null);
 
+  // ── Initial data load ────────────────────────────────────────────────────
   useEffect(() => {
     if (!authId) {
       setUsers([]); setExpenses([]); setRevenues([]); setBudgets([]);
@@ -73,6 +76,78 @@ export function AppDataProvider({ children, authId }: Props) {
       if (b.data) setBudgets(b.data as Budget[]);
       if (c.data && c.data.length > 0) setCategories(c.data as Category[]);
     }).finally(() => setLoading(false));
+  }, [authId]);
+
+  // ── Real-time subscriptions ──────────────────────────────────────────────
+  // Updates every connected user's view instantly when any record changes.
+  useEffect(() => {
+    if (!authId) return;
+
+    const channel = supabase
+      .channel(`realtime-app-${authId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "expenses" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          const row = payload.new as Expense;
+          setExpenses((prev) => {
+            if (prev.some((e) => e.expense_id === row.expense_id)) return prev;
+            return [row, ...prev];
+          });
+        } else if (payload.eventType === "UPDATE") {
+          const row = payload.new as Expense;
+          setExpenses((prev) => prev.map((e) => e.expense_id === row.expense_id ? row : e));
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as { expense_id: number };
+          setExpenses((prev) => prev.filter((e) => e.expense_id !== old.expense_id));
+        }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "revenues" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          const row = payload.new as Revenue;
+          setRevenues((prev) => {
+            if (prev.some((r) => r.revenue_id === row.revenue_id)) return prev;
+            return [row, ...prev];
+          });
+        } else if (payload.eventType === "UPDATE") {
+          const row = payload.new as Revenue;
+          setRevenues((prev) => prev.map((r) => r.revenue_id === row.revenue_id ? row : r));
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as { revenue_id: number };
+          setRevenues((prev) => prev.filter((r) => r.revenue_id !== old.revenue_id));
+        }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "budgets" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          const row = payload.new as Budget;
+          setBudgets((prev) => {
+            if (prev.some((b) => b.budget_id === row.budget_id)) return prev;
+            return [...prev, row];
+          });
+        } else if (payload.eventType === "UPDATE") {
+          const row = payload.new as Budget;
+          setBudgets((prev) => prev.map((b) => b.budget_id === row.budget_id ? row : b));
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as { budget_id: number };
+          setBudgets((prev) => prev.filter((b) => b.budget_id !== old.budget_id));
+        }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          const row = payload.new as Category;
+          setCategories((prev) => {
+            if (prev.some((c) => c.category_id === row.category_id)) return prev;
+            return [...prev, row].sort((a, b) => a.category_id - b.category_id);
+          });
+        } else if (payload.eventType === "UPDATE") {
+          const row = payload.new as Category;
+          setCategories((prev) => prev.map((c) => c.category_id === row.category_id ? row : c));
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as { category_id: number };
+          setCategories((prev) => prev.filter((c) => c.category_id !== old.category_id));
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [authId]);
 
   // ── Users (profiles table) ───────────────────────────────────────────────
@@ -121,10 +196,28 @@ export function AppDataProvider({ children, authId }: Props) {
     });
   }, []);
 
+  // ── Categories ───────────────────────────────────────────────────────────
+  const addCategory = useCallback(async (name: string, color: string): Promise<Category | null> => {
+    const { data, error } = await supabase
+      .from("categories")
+      .insert({ category_name: name.trim(), color })
+      .select()
+      .single();
+    if (error || !data) {
+      console.error("addCategory failed:", error?.message);
+      return null;
+    }
+    setCategories((prev) => {
+      if (prev.some((c) => c.category_id === (data as Category).category_id)) return prev;
+      return [...prev, data as Category].sort((a, b) => a.category_id - b.category_id);
+    });
+    return data as Category;
+  }, []);
+
   // ── Expenses ─────────────────────────────────────────────────────────────
   const addExpense = useCallback((data: Omit<Expense, "expense_id">) => {
     if (!authId) { console.error("addExpense: no authId — user not authenticated"); return; }
-    const tempId = -(Date.now()); // negative to avoid collision with real serial IDs
+    const tempId = -(Date.now());
     setExpenses((prev) => [{ ...data, expense_id: tempId, created_by_id: authId }, ...prev]);
     supabase.from("expenses").insert({
       category_id:   data.category_id,
@@ -268,11 +361,13 @@ export function AppDataProvider({ children, authId }: Props) {
   const value = useMemo<AppData>(() => ({
     users, expenses, revenues, budgets, categories, loading, loadError,
     refreshUsers, addUser, updateUser, deleteUser,
+    addCategory,
     addExpense, updateExpense, deleteExpense,
     addRevenue, updateRevenue, deleteRevenue,
     addBudget, updateBudget, deleteBudget,
   }), [users, expenses, revenues, budgets, categories, loading, loadError,
     refreshUsers, addUser, updateUser, deleteUser,
+    addCategory,
     addExpense, updateExpense, deleteExpense,
     addRevenue, updateRevenue, deleteRevenue,
     addBudget, updateBudget, deleteBudget,
