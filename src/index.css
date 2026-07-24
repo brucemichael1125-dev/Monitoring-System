@@ -117,6 +117,7 @@ input:focus, select:focus, textarea:focus {
 /* ─── Responsive grid utilities ────────────────────────── */
 /* Use alongside display:grid in inline style — only sets grid-template-columns */
 .rg-6  { grid-template-columns: repeat(6, 1fr); }
+.rg-5  { grid-template-columns: repeat(5, 1fr); }
 .rg-4  { grid-template-columns: repeat(4, 1fr); }
 .rg-3  { grid-template-columns: repeat(3, 1fr); }
 .rg-2  { grid-template-columns: repeat(2, 1fr); }
@@ -126,6 +127,7 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 1024px) {
   .rg-6    { grid-template-columns: repeat(3, 1fr); }
+  .rg-5    { grid-template-columns: repeat(3, 1fr); }
   .rg-2-1  { grid-template-columns: 1fr; }
   .rg-1-2  { grid-template-columns: 1fr; }
   .rg-form { grid-template-columns: 1fr; }
@@ -133,6 +135,7 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 640px) {
   .rg-6    { grid-template-columns: repeat(2, 1fr); }
+  .rg-5    { grid-template-columns: repeat(2, 1fr); }
   .rg-4    { grid-template-columns: repeat(2, 1fr); }
   .rg-3    { grid-template-columns: 1fr; }
   .rg-2    { grid-template-columns: 1fr; }
